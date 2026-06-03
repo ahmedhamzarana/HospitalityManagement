@@ -1,9 +1,10 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BedDouble, CalendarCheck, Users, Sparkles, Receipt,
-  BarChart3, UserCog, MessageSquare, Settings, LogIn, Bell,
+  BarChart3, UserCog, MessageSquare, Settings, LogIn, Bell, LogOut,
 } from "lucide-react";
 import { useStore } from "../lib/store.js";
+import { useAuth } from "../lib/auth.jsx";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -21,8 +22,12 @@ const nav = [
 
 export function AppLayout({ children, title, subtitle }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const settings = useStore((s) => s.settings);
   const pendingTasks = useStore((s) => s.tasks.filter((t) => t.status !== "done").length);
+  const { user, logout } = useAuth();
+  const displayName = user?.name || "Guest";
+  const initials = displayName.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -77,12 +82,19 @@ export function AppLayout({ children, title, subtitle }) {
             </button>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-sm font-medium leading-tight">Alex Morgan</div>
-                <div className="text-xs text-muted-foreground">General Manager</div>
+                <div className="text-sm font-medium leading-tight">{displayName}</div>
+                <div className="text-xs text-muted-foreground">{user?.role || "Staff"}</div>
               </div>
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground grid place-items-center font-semibold text-sm">
-                AM
+                {initials || "?"}
               </div>
+              <button
+                onClick={() => { logout(); navigate("/login", { replace: true }); }}
+                title="Sign out"
+                className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </header>

@@ -108,30 +108,6 @@ export default function Dashboard() {
           </ul>
         </div>
       </div>
-
-      <div className="card-elevated p-5 mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-display">Occupancy this week</h2>
-            <p className="text-xs text-muted-foreground">Forecasted trend based on confirmed bookings</p>
-          </div>
-          <div className="inline-flex items-center gap-1 text-success text-sm">
-            <TrendingUp className="w-4 h-4" /> +12.4%
-          </div>
-        </div>
-        <div className="grid grid-cols-7 gap-2 h-40 items-end">
-          {[58, 62, 71, 78, 84, 92, 88].map((v, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <div
-                className="w-full rounded-t-md bg-gradient-to-t from-primary to-accent"
-                style={{ height: `${v}%` }}
-                aria-label={`${v}% occupancy`}
-              />
-              <div className="text-xs text-muted-foreground">{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i]}</div>
-            </div>
-          ))}
-        </div>
-      </div>
     </AppLayout>
   );
 }
