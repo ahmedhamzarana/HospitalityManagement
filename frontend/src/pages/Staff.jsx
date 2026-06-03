@@ -10,7 +10,7 @@ export default function Staff() {
   // ALERT STATE (NEW)
   const [alert, setAlert] = useState({
     message: "",
-    type: "", // success | error
+    type: "",
   });
 
   const [formData, setFormData] = useState({
@@ -139,11 +139,10 @@ export default function Staff() {
       {alert.message && (
         <div
           className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
-          ${
-            alert.type === "success"
+          ${alert.type === "success"
               ? "bg-green-50 border-green-500 text-green-700"
               : "bg-red-50 border-red-500 text-red-700"
-          }`}
+            }`}
         >
           <span className="text-lg">
             {alert.type === "success" ? "✓" : "✕"}
@@ -181,9 +180,23 @@ export default function Staff() {
                   </td>
 
                   <td className="px-4 py-3">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      {u.status || "active"}
-                    </span>
+                    {(() => {
+                      let statusClass = "";
+
+                      if (u.status === "active") {
+                        statusClass = "bg-green-500/10 text-green-600 border-green-500/20";
+                      } else if (u.status === "inactive" || u.status === "deactive") {
+                        statusClass = "bg-red-500/10 text-red-600 border-red-500/20";
+                      } else {
+                        statusClass = "bg-gray-500/10 text-gray-600 border-gray-500/20";
+                      }
+
+                      return (
+                        <span className={`text-xs px-2 py-1 rounded-full border capitalize ${statusClass}`}>
+                          {u.status}
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   <td className="px-4 py-3 text-right">

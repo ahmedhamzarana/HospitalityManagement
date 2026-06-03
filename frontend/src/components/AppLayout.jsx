@@ -147,9 +147,11 @@ export function AppLayout({ children, title, subtitle }) {
 }
 
 /* STATUS BADGE */
-export function StatusPill({ status }) {
+export function StatusPill({ status, className = "" }) {
   return (
-    <span className="px-2 py-1 text-xs rounded bg-muted capitalize">
+    <span
+      className={`px-2 py-1 text-xs rounded capitalize border ${className}`}
+    >
       {status}
     </span>
   );
