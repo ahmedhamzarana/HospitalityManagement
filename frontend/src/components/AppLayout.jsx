@@ -3,8 +3,6 @@ import {
   LayoutDashboard, BedDouble, CalendarCheck, Users, Sparkles, Receipt,
   BarChart3, UserCog, MessageSquare, Settings, LogIn, Bell, LogOut,
 } from "lucide-react";
-import { useStore } from "../lib/store.js";
-import { useAuth } from "../lib/auth.jsx";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -23,103 +21,114 @@ const nav = [
 export function AppLayout({ children, title, subtitle }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const settings = useStore((s) => s.settings);
-  const pendingTasks = useStore((s) => s.tasks.filter((t) => t.status !== "done").length);
-  const { user, logout } = useAuth();
-  const displayName = user?.name || "Guest";
-  const initials = displayName.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+
+  const displayName = "Admin User";
+  const role = "Staff";
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
-        <div className="px-6 py-6 border-b border-sidebar-border">
-          <div className="text-xs uppercase tracking-[0.2em] text-gold">LuxuryStay</div>
-          <div className="font-display text-xl mt-1">Hospitality HMS</div>
+
+      {/* SIDEBAR */}
+      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground border-r flex flex-col">
+
+        <div className="px-6 py-6 border-b">
+          <div className="text-xs uppercase tracking-[0.2em] text-gold">
+            LuxuryStay
+          </div>
+          <div className="font-display text-xl mt-1">
+            Hospitality HMS
+          </div>
         </div>
+
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {nav.map((n) => {
-            const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
-            const Icon = n.icon;
+          {nav.map((item) => {
+            const active = pathname === item.to;
+            const Icon = item.icon;
+
             return (
               <Link
-                key={n.to}
-                to={n.to}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm ${
                   active
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                <span className="flex-1">{n.label}</span>
-                {n.to === "/housekeeping" && pendingTasks > 0 && (
-                  <span className="text-[10px] bg-gold text-gold-foreground rounded-full px-1.5 py-0.5 font-semibold">
-                    {pendingTasks}
-                  </span>
-                )}
+                {item.label}
               </Link>
             );
           })}
         </nav>
-        <div className="px-6 py-4 border-t border-sidebar-border text-xs text-sidebar-foreground/60">
-          {settings.hotelName}
-          <div className="mt-1">v1.0 · eProject demo</div>
+
+        <div className="px-6 py-4 border-t text-xs text-sidebar-foreground/60">
+          LuxuryStay Hotel
+          <div className="mt-1">v1.0 · static UI</div>
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 flex flex-col">
+      {/* MAIN */}
+      <main className="flex-1 flex flex-col">
+
+        {/* HEADER */}
         <header className="h-16 border-b bg-card flex items-center justify-between px-8">
+
           <div>
-            <h1 className="text-xl font-display text-foreground">{title}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+            <h1 className="text-xl font-display">{title}</h1>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
+
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-md hover:bg-muted text-muted-foreground">
+
+            {/* NOTIFICATION (STATIC) */}
+            <button className="p-2 rounded-md hover:bg-muted">
               <Bell className="w-4 h-4" />
-              {pendingTasks > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
-              )}
+              <span className="absolute w-2 h-2 bg-red-500 rounded-full" />
             </button>
+
+            {/* USER STATIC */}
             <div className="flex items-center gap-3">
+
               <div className="text-right">
-                <div className="text-sm font-medium leading-tight">{displayName}</div>
-                <div className="text-xs text-muted-foreground">{user?.role || "Staff"}</div>
+                <div className="text-sm font-medium">
+                  {displayName}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {role}
+                </div>
               </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground grid place-items-center font-semibold text-sm">
-                {initials || "?"}
+
+              <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center text-sm font-semibold">
+                AU
               </div>
+
+              {/* NAVIGATION ONLY */}
               <button
-                onClick={() => { logout(); navigate("/login", { replace: true }); }}
-                title="Sign out"
-                className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+                onClick={() => navigate("/login")}
+                className="p-2 rounded-md hover:bg-muted"
               >
                 <LogOut className="w-4 h-4" />
               </button>
+
             </div>
           </div>
         </header>
-        <div className="p-8 flex-1 overflow-x-auto">{children}</div>
+
+        {/* CONTENT */}
+        <div className="p-8 flex-1 overflow-auto">
+          {children}
+        </div>
+
       </main>
     </div>
   );
 }
 
+/* STATIC BADGE (replaces StatusPill) */
 export function StatusPill({ status }) {
-  const map = {
-    available: "bg-success/15 text-success",
-    occupied: "bg-info/15 text-info",
-    cleaning: "bg-warning/20 text-warning-foreground",
-    maintenance: "bg-destructive/15 text-destructive",
-    confirmed: "bg-info/15 text-info",
-    "checked-in": "bg-success/15 text-success",
-    "checked-out": "bg-muted text-muted-foreground",
-    cancelled: "bg-destructive/15 text-destructive",
-    pending: "bg-warning/20 text-warning-foreground",
-    "in-progress": "bg-info/15 text-info",
-    done: "bg-success/15 text-success",
-  };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${map[status] ?? "bg-muted text-muted-foreground"}`}>
+    <span className="px-2 py-1 text-xs rounded bg-muted capitalize">
       {status}
     </span>
   );

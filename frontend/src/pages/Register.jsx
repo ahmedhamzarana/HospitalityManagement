@@ -1,46 +1,73 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Hotel, UserPlus } from "lucide-react";
-import { useAuth } from "../lib/auth.jsx";
-
-const ROLES = ["General Manager", "Front Desk", "Housekeeping", "Accounting", "Reservations"];
+import { useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "", email: "", password: "", confirm: "", role: "Front Desk",
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "guest",
+    status: "active",
   });
-  const [error, setError] = useState("");
 
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const [errors, setErrors] = useState({});
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const onSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
-    if (form.password.length < 6) return setError("Password must be at least 6 characters.");
-    if (form.password !== form.confirm) return setError("Passwords do not match.");
-    try {
-      register({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        role: form.role,
+
+    setErrors({});
+    setAlertMessage("");
+
+    axios
+      .post("http://localhost:5000/api/auth/register", formData)
+      .then((response) => {
+        console.log("User created successfully:", response.data);
+        navigate("/login");
+      })
+      .catch((error) => {
+        const backendErrors = error.response?.data?.errors;
+
+        if (backendErrors) {
+          setErrors(backendErrors);
+        } else {
+          setAlertMessage("Something went wrong. Please try again later.");
+        }
       });
-      navigate("/", { replace: true });
-    } catch (err) {
-      setError(err.message);
-    }
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+
+      {/* LEFT PANEL */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
         <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-gold">LuxuryStay</div>
-          <div className="font-display text-3xl mt-2">Hospitality HMS</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-gold">
+            LuxuryStay
+          </div>
+          <div className="font-display text-3xl mt-2">
+            Hospitality HMS
+          </div>
         </div>
+
         <div>
           <h2 className="font-display text-4xl leading-tight">
             Join the <span className="text-gold">LuxuryStay</span> team
@@ -49,64 +76,89 @@ export default function Register() {
             Create your staff account to access the property management system.
           </p>
         </div>
-        <div className="text-xs text-sidebar-foreground/60">© {new Date().getFullYear()} LuxuryStay Hospitality</div>
+
+        <div className="text-xs text-sidebar-foreground/60">
+          © {new Date().getFullYear()} LuxuryStay Hospitality
+        </div>
       </div>
 
+      {/* RIGHT FORM */}
       <div className="flex items-center justify-center p-8">
-        <form onSubmit={onSubmit} className="w-full max-w-md">
+        <div className="w-full max-w-md">
+
           <div className="flex items-center gap-2 text-primary mb-6">
             <Hotel className="w-6 h-6" />
             <span className="font-display text-xl">Create account</span>
           </div>
-          <h1 className="font-display text-3xl text-foreground">Staff Registration</h1>
-          <p className="text-sm text-muted-foreground mt-1">Set up your access to the HMS.</p>
 
-          {error && (
-            <div className="mt-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm">{error}</div>
+          <h1 className="font-display text-3xl text-foreground">
+            Staff Registration
+          </h1>
+
+          <p className="text-sm text-muted-foreground mt-1">
+            Set up your access to the HMS.
+          </p>
+
+          {alertMessage && (
+            <p className="mt-3 text-red-500 text-sm">{alertMessage}</p>
           )}
 
-          <div className="mt-6 space-y-4">
-            <div>
-              <label className="text-sm font-medium">Full name</label>
-              <input required value={form.name} onChange={set("name")}
-                className="mt-1 w-full h-10 px-3 rounded-md border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Email</label>
-              <input type="email" required value={form.email} onChange={set("email")}
-                className="mt-1 w-full h-10 px-3 rounded-md border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Role</label>
-              <select value={form.role} onChange={set("role")}
-                className="mt-1 w-full h-10 px-3 rounded-md border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Password</label>
-                <input type="password" required value={form.password} onChange={set("password")}
-                  className="mt-1 w-full h-10 px-3 rounded-md border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Confirm</label>
-                <input type="password" required value={form.confirm} onChange={set("confirm")}
-                  className="mt-1 w-full h-10 px-3 rounded-md border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-            </div>
-          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="mt-6 space-y-4">
 
-          <button type="submit"
-            className="mt-6 w-full h-10 rounded-md bg-primary text-primary-foreground font-medium inline-flex items-center justify-center gap-2 hover:bg-primary/90">
-            <UserPlus className="w-4 h-4" /> Create account
-          </button>
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Full name"
+                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs">{errors.name}</p>
+              )}
 
-          <p className="mt-4 text-sm text-muted-foreground text-center">
-            Already registered?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
-          </p>
-        </form>
+              <input
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs">{errors.email}</p>
+              )}
+
+              <input
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs">{errors.password}</p>
+              )}
+
+            </div>
+
+            <button
+              type="submit"
+              className="mt-6 w-full h-10 rounded-md bg-primary text-primary-foreground font-medium inline-flex items-center justify-center gap-2 hover:bg-primary/90"
+            >
+              <UserPlus className="w-4 h-4" />
+              Create account
+            </button>
+
+            <p className="mt-4 text-sm text-muted-foreground text-center">
+              Already registered?{" "}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </form>
+
+        </div>
       </div>
     </div>
   );

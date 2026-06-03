@@ -1,38 +1,55 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AppLayout, StatusPill } from "../components/AppLayout.jsx";
-import { fmtMoney, store, useStore } from "../lib/store.js";
+const fmtMoney = (n) => `$${n}`;
 
 export default function Reservations() {
-  const reservations = useStore((s) => s.reservations);
-  const rooms = useStore((s) => s.rooms);
-  const guests = useStore((s) => s.guests);
   const [open, setOpen] = useState(false);
-  const [guestId, setGuestId] = useState(guests[0]?.id ?? "");
-  const [roomId, setRoomId] = useState("");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
 
-  const available = useMemo(() => rooms.filter((r) => r.status === "available"), [rooms]);
-
-  const submit = (e) => {
-    e.preventDefault();
-    const room = rooms.find((r) => r.id === roomId);
-    if (!room || !checkIn || !checkOut) return;
-    const nights = Math.max(1, Math.round((+new Date(checkOut) - +new Date(checkIn)) / 86400000));
-    store.addReservation({ guestId, roomId, checkIn, checkOut, status: "confirmed", total: nights * room.rate });
-    setOpen(false);
-    setRoomId(""); setCheckIn(""); setCheckOut("");
-  };
+  const reservations = [
+    {
+      id: 1,
+      guest: "John Smith",
+      room: "#101 · Deluxe",
+      checkIn: "2026-06-10",
+      checkOut: "2026-06-12",
+      status: "confirmed",
+      total: 450,
+    },
+    {
+      id: 2,
+      guest: "Sarah Khan",
+      room: "#202 · Suite",
+      checkIn: "2026-06-11",
+      checkOut: "2026-06-14",
+      status: "checked-in",
+      total: 980,
+    },
+    {
+      id: 3,
+      guest: "Ali Ahmed",
+      room: "#305 · Standard",
+      checkIn: "2026-06-09",
+      checkOut: "2026-06-11",
+      status: "checked-out",
+      total: 320,
+    },
+  ];
 
   return (
     <AppLayout title="Reservations" subtitle="All bookings, latest first.">
+
+      {/* BUTTON */}
       <div className="flex justify-end mb-4">
-        <button onClick={() => setOpen(true)} className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90">
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90"
+        >
           <Plus className="w-4 h-4" /> New reservation
         </button>
       </div>
 
+      {/* TABLE */}
       <div className="card-elevated overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-secondary text-xs uppercase tracking-wider text-muted-foreground">
@@ -46,63 +63,94 @@ export default function Reservations() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
+
           <tbody>
-            {reservations.map((r) => {
-              const g = guests.find((x) => x.id === r.guestId);
-              const room = rooms.find((x) => x.id === r.roomId);
-              return (
-                <tr key={r.id} className="border-t hover:bg-muted/30">
-                  <td className="px-4 py-3 font-medium">{g?.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">#{room?.number} · {room?.type}</td>
-                  <td className="px-4 py-3">{r.checkIn}</td>
-                  <td className="px-4 py-3">{r.checkOut}</td>
-                  <td className="px-4 py-3"><StatusPill status={r.status} /></td>
-                  <td className="px-4 py-3 text-right font-medium">{fmtMoney(r.total)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {r.status === "confirmed" && (
-                      <button onClick={() => store.setReservationStatus(r.id, "checked-in")} className="text-xs text-accent hover:underline">Check in</button>
-                    )}
-                    {r.status === "checked-in" && (
-                      <button onClick={() => store.setReservationStatus(r.id, "checked-out")} className="text-xs text-accent hover:underline">Check out</button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {reservations.map((r) => (
+              <tr key={r.id} className="border-t hover:bg-muted/30">
+                <td className="px-4 py-3 font-medium">{r.guest}</td>
+                <td className="px-4 py-3 text-muted-foreground">{r.room}</td>
+                <td className="px-4 py-3">{r.checkIn}</td>
+                <td className="px-4 py-3">{r.checkOut}</td>
+                <td className="px-4 py-3">
+                  <StatusPill status={r.status} />
+                </td>
+                <td className="px-4 py-3 text-right font-medium">
+                  {fmtMoney(r.total)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {r.status === "confirmed" && (
+                    <span className="text-xs text-accent">Check in</span>
+                  )}
+                  {r.status === "checked-in" && (
+                    <span className="text-xs text-accent">Check out</span>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
+      {/* MODAL (ONLY WHEN OPEN) */}
       {open && (
-        <div className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50" onClick={() => setOpen(false)}>
-          <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="card-elevated w-full max-w-md p-6 space-y-4">
+        <div
+          className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="card-elevated w-full max-w-md p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="font-display text-xl">New reservation</h2>
+
             <label className="block text-sm">
               Guest
-              <select value={guestId} onChange={(e) => setGuestId(e.target.value)} className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2">
-                {guests.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              <select className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2">
+                <option>John Smith</option>
+                <option>Sarah Khan</option>
+                <option>Ali Ahmed</option>
               </select>
             </label>
+
             <label className="block text-sm">
               Room
-              <select value={roomId} onChange={(e) => setRoomId(e.target.value)} required className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2">
-                <option value="">Select available room…</option>
-                {available.map((r) => <option key={r.id} value={r.id}>#{r.number} · {r.type} · {fmtMoney(r.rate)}/night</option>)}
+              <select className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2">
+                <option>#101 · Deluxe · $120/night</option>
+                <option>#202 · Suite · $180/night</option>
+                <option>#305 · Standard · $90/night</option>
               </select>
             </label>
+
             <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">Check-in
-                <input type="date" required value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2" />
+              <label className="block text-sm">
+                Check-in
+                <input
+                  type="date"
+                  className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+                />
               </label>
-              <label className="block text-sm">Check-out
-                <input type="date" required value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2" />
+
+              <label className="block text-sm">
+                Check-out
+                <input
+                  type="date"
+                  className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+                />
               </label>
             </div>
+
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm hover:bg-muted rounded-md">Cancel</button>
-              <button className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md">Confirm</button>
+              <button
+                onClick={() => setOpen(false)}
+                className="px-4 py-2 text-sm hover:bg-muted rounded-md"
+              >
+                Cancel
+              </button>
+              <button className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md">
+                Confirm
+              </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </AppLayout>
