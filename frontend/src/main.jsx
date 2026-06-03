@@ -6,6 +6,7 @@ import "./styles.css";
 
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+
 import Dashboard from "./pages/Dashboard.jsx";
 import Rooms from "./pages/Rooms.jsx";
 import Reservations from "./pages/Reservations.jsx";
@@ -18,27 +19,116 @@ import Staff from "./pages/Staff.jsx";
 import Feedback from "./pages/Feedback.jsx";
 import Settings from "./pages/Settings.jsx";
 
+import ProtectedRoute from "./lib/ProtectedRoute";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
 
-        {/* PUBLIC PAGES */}
+        {/* PUBLIC ROUTES */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* APP PAGES (STATIC UI ONLY) */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/rooms" element={<Rooms />} />
-        <Route path="/reservations" element={<Reservations />} />
-        <Route path="/checkin" element={<CheckIn />} />
-        <Route path="/guests" element={<Guests />} />
-        <Route path="/housekeeping" element={<Housekeeping />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/staff" element={<Staff />} />
-        <Route path="/feedback" element={<Feedback />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* PROTECTED ROUTES */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/rooms"
+          element={
+            <ProtectedRoute>
+              <Rooms />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reservations"
+          element={
+            <ProtectedRoute>
+              <Reservations />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/checkin"
+          element={
+            <ProtectedRoute>
+              <CheckIn />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/guests"
+          element={
+            <ProtectedRoute>
+              <Guests />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/housekeeping"
+          element={
+            <ProtectedRoute>
+              <Housekeeping />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/billing"
+          element={
+            <ProtectedRoute>
+              <Billing />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute>
+              <Staff />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/feedback"
+          element={
+            <ProtectedRoute>
+              <Feedback />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
       </Routes>
     </BrowserRouter>

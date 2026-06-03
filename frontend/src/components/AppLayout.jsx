@@ -3,6 +3,7 @@ import {
   LayoutDashboard, BedDouble, CalendarCheck, Users, Sparkles, Receipt,
   BarChart3, UserCog, MessageSquare, Settings, LogIn, Bell, LogOut,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -22,8 +23,27 @@ export function AppLayout({ children, title, subtitle }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const displayName = "Admin User";
-  const role = "Staff";
+  // ✅ USER STATE
+  const [user, setUser] = useState(null);
+
+  // ✅ LOAD USER FROM LOCALSTORAGE
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  // ✅ LOGOUT
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+
+    setUser(null);
+
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -81,32 +101,33 @@ export function AppLayout({ children, title, subtitle }) {
 
           <div className="flex items-center gap-4">
 
-            {/* NOTIFICATION (STATIC) */}
-            <button className="p-2 rounded-md hover:bg-muted">
+            {/* NOTIFICATION */}
+            <button className="p-2 rounded-md hover:bg-muted relative">
               <Bell className="w-4 h-4" />
-              <span className="absolute w-2 h-2 bg-red-500 rounded-full" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* USER STATIC */}
+            {/* USER INFO */}
             <div className="flex items-center gap-3">
 
               <div className="text-right">
                 <div className="text-sm font-medium">
-                  {displayName}
+                  {user?.name || "Guest User"}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {role}
+                <div className="text-xs text-primary">
+                  {user?.role || "User"}
                 </div>
               </div>
 
               <div className="w-9 h-9 rounded-full bg-primary text-white grid place-items-center text-sm font-semibold">
-                AU
+                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </div>
 
-              {/* NAVIGATION ONLY */}
+              {/* LOGOUT */}
               <button
-                onClick={() => navigate("/login")}
+                onClick={handleLogout}
                 className="p-2 rounded-md hover:bg-muted"
+                title="Logout"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -125,7 +146,7 @@ export function AppLayout({ children, title, subtitle }) {
   );
 }
 
-/* STATIC BADGE (replaces StatusPill) */
+/* STATUS BADGE */
 export function StatusPill({ status }) {
   return (
     <span className="px-2 py-1 text-xs rounded bg-muted capitalize">
