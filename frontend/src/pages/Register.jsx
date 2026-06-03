@@ -15,7 +15,12 @@ export default function Register() {
   });
 
   const [errors, setErrors] = useState({});
-  const [alertMessage, setAlertMessage] = useState("");
+
+  // SAME ALERT STYLE AS LOGIN
+  const [alert, setAlert] = useState({
+    type: "",
+    message: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,21 +40,37 @@ export default function Register() {
     e.preventDefault();
 
     setErrors({});
-    setAlertMessage("");
+    setAlert({ type: "", message: "" });
 
     axios
       .post("http://localhost:5000/api/auth/register", formData)
       .then((response) => {
-        console.log("User created successfully:", response.data);
-        navigate("/login");
+        setAlert({
+          type: "success",
+          message: "Account created successfully!",
+        });
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
       })
       .catch((error) => {
         const backendErrors = error.response?.data?.errors;
 
         if (backendErrors) {
           setErrors(backendErrors);
+
+          setAlert({
+            type: "error",
+            message:
+              Object.values(backendErrors)[0] ||
+              "Validation error",
+          });
         } else {
-          setAlertMessage("Something went wrong. Please try again later.");
+          setAlert({
+            type: "error",
+            message: "Something went wrong. Please try again later.",
+          });
         }
       });
   };
@@ -73,12 +94,12 @@ export default function Register() {
             Join the <span className="text-gold">LuxuryStay</span> team
           </h2>
           <p className="mt-4 text-sidebar-foreground/70 max-w-md">
-            Create your staff account to access the property management system.
+            Create your staff account to access the system.
           </p>
         </div>
 
         <div className="text-xs text-sidebar-foreground/60">
-          © {new Date().getFullYear()} LuxuryStay Hospitality
+          © {new Date().getFullYear()} LuxuryStay
         </div>
       </div>
 
@@ -96,11 +117,21 @@ export default function Register() {
           </h1>
 
           <p className="text-sm text-muted-foreground mt-1">
-            Set up your access to the HMS.
+            Set up your access to HMS.
           </p>
 
-          {alertMessage && (
-            <p className="mt-3 text-red-500 text-sm">{alertMessage}</p>
+          {/* ALERT (SAME AS LOGIN STYLE) */}
+          {alert.message && (
+            <div
+              className={`mt-4 p-3 rounded-md text-sm font-medium border
+              ${
+                alert.type === "error"
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-green-50 text-green-700 border-green-200"
+              }`}
+            >
+              {alert.message}
+            </div>
           )}
 
           <form onSubmit={handleSubmit}>
@@ -113,9 +144,6 @@ export default function Register() {
                 placeholder="Full name"
                 className="w-full h-10 px-3 rounded-md border bg-card text-sm"
               />
-              {errors.name && (
-                <p className="text-red-500 text-xs">{errors.name}</p>
-              )}
 
               <input
                 name="email"
@@ -124,9 +152,6 @@ export default function Register() {
                 placeholder="Email"
                 className="w-full h-10 px-3 rounded-md border bg-card text-sm"
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs">{errors.email}</p>
-              )}
 
               <input
                 name="password"
@@ -136,9 +161,6 @@ export default function Register() {
                 placeholder="Password"
                 className="w-full h-10 px-3 rounded-md border bg-card text-sm"
               />
-              {errors.password && (
-                <p className="text-red-500 text-xs">{errors.password}</p>
-              )}
 
             </div>
 

@@ -5,8 +5,13 @@ import axios from "axios";
 export default function Staff() {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState([]);
-  const [alertMessage, setAlertMessage] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
+
+  // ALERT STATE (NEW)
+  const [alert, setAlert] = useState({
+    message: "",
+    type: "", // success | error
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,6 +22,18 @@ export default function Staff() {
 
   const token = localStorage.getItem("token");
 
+  // AUTO HIDE ALERT
+  useEffect(() => {
+    if (alert.message) {
+      const timer = setTimeout(() => {
+        setAlert({ message: "", type: "" });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
+
+  // FETCH USERS
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
@@ -31,7 +48,11 @@ export default function Staff() {
       setUsers(response.data.users || response.data);
     } catch (err) {
       console.error("Error fetching users:", err);
-      setAlertMessage("Failed to load users.");
+
+      setAlert({
+        message: "Failed to load users",
+        type: "error",
+      });
     }
   };
 
@@ -39,6 +60,7 @@ export default function Staff() {
     fetchUsers();
   }, []);
 
+  // INPUT CHANGE
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -46,6 +68,7 @@ export default function Staff() {
     });
   };
 
+  // EDIT USER
   const handleEdit = async (id) => {
     try {
       const response = await axios.get(
@@ -66,13 +89,19 @@ export default function Staff() {
         role: user.role || "",
         status: user.status || "",
       });
+
       setOpen(true);
     } catch (error) {
       console.error("Error fetching user:", error);
-      setAlertMessage("Failed to load user details.");
+
+      setAlert({
+        message: "Failed to load user details",
+        type: "error",
+      });
     }
   };
 
+  // UPDATE USER
   const handleUpdate = async () => {
     try {
       await axios.put(
@@ -85,26 +114,43 @@ export default function Staff() {
         }
       );
 
-      setAlertMessage("User updated successfully.");
+      setAlert({
+        message: "User updated successfully",
+        type: "success",
+      });
 
       setOpen(false);
       fetchUsers();
     } catch (error) {
       console.error("Update Error:", error);
-      setAlertMessage(
-        error.response?.data?.error || "Failed to update user."
-      );
+
+      setAlert({
+        message:
+          error.response?.data?.error || "Failed to update user",
+        type: "error",
+      });
     }
   };
 
   return (
     <AppLayout title="Staff & Roles" subtitle="Admin: manage team">
-      {alertMessage && (
-        <div className="mb-4 rounded-md bg-muted p-3 text-sm">
-          {alertMessage}
+
+      {/* ALERT UI */}
+      {alert.message && (
+        <div
+          className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
+          ${
+            alert.type === "success"
+              ? "bg-green-50 border-green-500 text-green-700"
+              : "bg-red-50 border-red-500 text-red-700"
+          }`}
+        >
+          <span className="text-lg">
+            {alert.type === "success" ? "✓" : "✕"}
+          </span>
+          <span>{alert.message}</span>
         </div>
       )}
-
       {/* TABLE */}
       <div className="card-elevated overflow-hidden">
         <table className="w-full text-sm">
