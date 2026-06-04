@@ -5,10 +5,12 @@ const {
   getUsers,
   getUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  GetOnlyGuestUsers
 } = require('../controllers/usercontroller');
 
 router.get('/all', authMiddleware, getUsers);
+router.get('/all/guests', authMiddleware, GetOnlyGuestUsers);
 router.get('/get/:id', authMiddleware, getUser);
 router.put('/update/:id', authMiddleware, updateUser)
 router.delete('/delete/:id', authMiddleware, deleteUser);

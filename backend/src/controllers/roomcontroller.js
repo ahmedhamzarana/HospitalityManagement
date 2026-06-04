@@ -92,3 +92,12 @@ exports.createRoom = async (req, res) => {
     });
   }
 };
+
+exports.GetOnlyAvaliableRoom = async (req, res) => {
+  try {
+    const rooms = await Room.find({ status: "available" });
+    res.json(rooms);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

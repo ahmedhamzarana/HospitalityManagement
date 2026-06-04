@@ -1,32 +1,29 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, BedDouble, CalendarCheck, Users, Sparkles, Receipt,
-  BarChart3, UserCog, MessageSquare, Settings, LogIn, Bell, LogOut,
+  LayoutDashboard,
+  BedDouble,
+  CalendarCheck,
+  Users,
+  Sparkles,
+  Receipt,
+  BarChart3,
+  UserCog,
+  MessageSquare,
+  Settings,
+  LogIn,
+  Bell,
+  LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/rooms", label: "Rooms", icon: BedDouble },
-  { to: "/reservations", label: "Reservations", icon: CalendarCheck },
-  { to: "/checkin", label: "Check-in / out", icon: LogIn },
-  { to: "/guests", label: "Guests", icon: Users },
-  { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
-  { to: "/billing", label: "Billing", icon: Receipt },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/staff", label: "Staff", icon: UserCog },
-  { to: "/feedback", label: "Feedback", icon: MessageSquare },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
 
 export function AppLayout({ children, title, subtitle }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // ✅ USER STATE
+  // USER STATE
   const [user, setUser] = useState(null);
 
-  // ✅ LOAD USER FROM LOCALSTORAGE
+  // LOAD USER
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -34,14 +31,67 @@ export function AppLayout({ children, title, subtitle }) {
     }
   }, []);
 
-  // ✅ LOGOUT
+  // ✅ IMPORTANT FIX
+  const role = user?.role || "guest";
+
+  // NAVIGATION (ROLE BASED)
+  let nav = [];
+
+  if (role === "admin") {
+    nav = [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/rooms", label: "Rooms", icon: BedDouble },
+      { to: "/reservations", label: "Reservations", icon: CalendarCheck },
+      { to: "/checkin", label: "Check-in / out", icon: LogIn },
+      { to: "/guests", label: "Guests", icon: Users },
+      { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
+      { to: "/billing", label: "Billing", icon: Receipt },
+      { to: "/reports", label: "Reports", icon: BarChart3 },
+      { to: "/staff", label: "Staff", icon: UserCog },
+      { to: "/feedback", label: "Feedback", icon: MessageSquare },
+      { to: "/settings", label: "Settings", icon: Settings },
+    ];
+  } else if (role === "manager") {
+    nav = [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/rooms", label: "Rooms", icon: BedDouble },
+      { to: "/reservations", label: "Reservations", icon: CalendarCheck },
+      { to: "/guests", label: "Guests", icon: Users },
+      { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
+      { to: "/billing", label: "Billing", icon: Receipt },
+      { to: "/reports", label: "Reports", icon: BarChart3 },
+      { to: "/staff", label: "Staff", icon: UserCog },
+    ];
+  } else if (role === "receptionist") {
+    nav = [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/rooms", label: "Rooms", icon: BedDouble },
+      { to: "/reservations", label: "Reservations", icon: CalendarCheck },
+      { to: "/checkin", label: "Check-in / out", icon: LogIn },
+      { to: "/guests", label: "Guests", icon: Users },
+    ];
+  } else if (role === "housekeeping") {
+    nav = [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
+      { to: "/staff-tasks", label: "Staff Tasks", icon: UserCog },
+    ];
+  } else {
+    nav = [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+            { to: "/rooms", label: "Rooms", icon: BedDouble },
+      { to: "/reservations", label: "My Reservations", icon: CalendarCheck },
+            { to: "/feedback", label: "Feedback", icon: MessageSquare },
+    ];
+  }
+
+  // LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("role");
 
     setUser(null);
-
     navigate("/login", { replace: true });
   };
 
@@ -114,8 +164,8 @@ export function AppLayout({ children, title, subtitle }) {
                 <div className="text-sm font-medium">
                   {user?.name || "Guest User"}
                 </div>
-                <div className="text-xs text-primary">
-                  {user?.role || "User"}
+                <div className="text-xs text-primary capitalize">
+                  {role}
                 </div>
               </div>
 
@@ -149,9 +199,7 @@ export function AppLayout({ children, title, subtitle }) {
 /* STATUS BADGE */
 export function StatusPill({ status, className = "" }) {
   return (
-    <span
-      className={`px-2 py-1 text-xs rounded capitalize border ${className}`}
-    >
+    <span className={`px-2 py-1 text-xs rounded capitalize border ${className}`}>
       {status}
     </span>
   );
