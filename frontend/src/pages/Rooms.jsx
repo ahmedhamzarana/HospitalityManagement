@@ -129,15 +129,19 @@ export default function Rooms() {
       title="Rooms"
       subtitle="Live inventory across 5 floors and 40 rooms."
     >
+      {/* ALERT UI */}
       {alert.message && (
         <div
-          className={`mb-4 p-3 rounded-md text-sm ${
-            alert.type === "success"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}
+          className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
+          ${alert.type === "success"
+              ? "bg-green-50 border-green-500 text-green-700"
+              : "bg-red-50 border-red-500 text-red-700"
+            }`}
         >
-          {alert.message}
+          <span className="text-lg">
+            {alert.type === "success" ? "✓" : "✕"}
+          </span>
+          <span>{alert.message}</span>
         </div>
       )}
 
