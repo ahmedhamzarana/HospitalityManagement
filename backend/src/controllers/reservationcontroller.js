@@ -1,6 +1,7 @@
 const Reservation = require("../models/reservation");
 const Room = require("../models/room");
 
+// CREATE
 exports.createReservation = async (req, res) => {
   try {
     const { user, room, checkIn, checkOut } = req.body;
@@ -11,11 +12,8 @@ exports.createReservation = async (req, res) => {
       return res.status(404).json({ message: "Room not found" });
     }
 
-    // ❌ ONLY AVAILABLE ROOMS
     if (existingRoom.status !== "available") {
-      return res.status(400).json({
-        message: "Room already booked or not available",
-      });
+      return res.status(400).json({ message: "Room not available" });
     }
 
     const checkInDate = new Date(checkIn);
@@ -32,39 +30,62 @@ exports.createReservation = async (req, res) => {
       return res.status(400).json({ message: "Invalid check-out date" });
     }
 
-    // ✔ CREATE RESERVATION
     const reservation = await Reservation.create({
       user,
       room,
       checkIn: checkInDate,
       checkOut: checkOutDate,
+      status: "pending",
     });
 
-    // ✔ UPDATE ROOM STATUS
-    await Room.findByIdAndUpdate(room, {
-      status: "occupied",
-    });
+    await Room.findByIdAndUpdate(room, { status: "occupied" });
 
-    return res.status(201).json({
-      message: "Reservation created successfully",
+    res.status(201).json({
+      message: "Reservation created",
       reservation,
     });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
+// GET ALL
 exports.getAllReservation = async (req, res) => {
   try {
     const reservations = await Reservation.find()
       .populate("user", "name")
-      .populate("room", "roomId floor category status price");
+      .populate("room", "roomId category price status");
 
-    res.status(200).json(reservations);
+    res.json(reservations);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// UPDATE STATUS FLOW
+exports.updateReservationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const reservation = await Reservation.findById(id);
+
+    if (!reservation) {
+      return res.status(404).json({ message: "Reservation not found" });
+    }
+
+    reservation.status = status;
+    await reservation.save();
+
+    // ROOM FREE ON FINAL STATUS
+    if (status === "checked_out" || status === "cancelled") {
+      await Room.findByIdAndUpdate(reservation.room, {
+        status: "available",
+      });
+    }
+
+    res.json({ message: "Status updated", reservation });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

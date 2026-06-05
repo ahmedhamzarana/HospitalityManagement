@@ -14,30 +14,20 @@ const reservationSchema = new mongoose.Schema(
       required: true,
     },
 
-    checkIn: {
-      type: Date,
-      required: true,
-      validate: {
-        validator: function (value) {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+    checkIn: { type: Date, required: true },
+    checkOut: { type: Date, required: true },
 
-          // check-in must be today or future
-          return value >= today;
-        },
-        message: "Check-in date cannot be in the past",
-      },
-    },
-
-    checkOut: {
-      type: Date,
-      required: true,
-      validate: {
-        validator: function (value) {
-          return this.checkIn && value > this.checkIn;
-        },
-        message: "Check-out must be after check-in date",
-      },
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "checked_in",
+        "checked_out",
+        "cancelled",
+      ],
+      default: "pending",
+      index: true,
     },
   },
   { timestamps: true }

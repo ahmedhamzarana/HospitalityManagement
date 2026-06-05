@@ -7,6 +7,7 @@ const fmtMoney = (n) => `$ ${n}`;
 
 export default function Reservations() {
   const [open, setOpen] = useState(false);
+  const [editopen, editsetOpen] = useState(false);
   const [reservations, setReservations] = useState([]);
   const [users, setUsers] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -37,9 +38,6 @@ export default function Reservations() {
     }
   };
 
-  // =======================
-  // FETCH ONLY GUEST USERS
-  // =======================
   const fetchUsers = async () => {
     try {
       const res = await axios.get(
@@ -52,9 +50,6 @@ export default function Reservations() {
     }
   };
 
-  // =======================
-  // FETCH ONLY AVAILABLE ROOMS
-  // =======================
   const fetchRooms = async () => {
     try {
       const res = await axios.get(
@@ -74,18 +69,14 @@ export default function Reservations() {
   }, []);
 
   // =======================
-  // FORM HANDLER
+  // FORM
   // =======================
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // =======================
-  // CREATE RESERVATION
-  // =======================
   const createReservation = async () => {
     try {
-      // validation
       if (!form.user || !form.room || !form.checkIn || !form.checkOut) {
         setAlert({ message: "All fields are required", type: "error" });
         return;
@@ -97,16 +88,10 @@ export default function Reservations() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      fetchReservation();
-      fetchRooms(); // refresh available rooms
-
       setOpen(false);
       setForm({ user: "", room: "", checkIn: "", checkOut: "" });
 
-      setAlert({
-        message: "Reservation created successfully",
-        type: "success",
-      });
+      fetchReservation();
     } catch (err) {
       setAlert({
         message: err.response?.data?.message || "Failed to create",
@@ -115,21 +100,70 @@ export default function Reservations() {
     }
   };
 
+  // =======================
+  // STATUS FLOW LOGIC (YOUR REQUIREMENT)
+  // =======================
+  const getNextStatus = (status) => {
+    switch (status) {
+      case "pending":
+        return "confirmed";
+      case "confirmed":
+        return "checked_in";
+      case "checked_in":
+        return "checked_out";
+      case "checked_out":
+        return "completed";
+      default:
+        return null;
+    }
+  };
+
+  const getButtonLabel = (status) => {
+    switch (status) {
+      case "pending":
+        return "Confirm";
+      case "confirmed":
+        return "Check-in";
+      case "checked_in":
+        return "Check-out";
+      case "checked_out":
+        return "Complete";
+      default:
+        return "";
+    }
+  };
+
+  const updateStatus = async (id, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/reservation/status/${id}`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      fetchReservation();
+    } catch (err) {
+      setAlert({
+        message: err.response?.data?.message || "Update failed",
+        type: "error",
+      });
+    }
+  };
+
   return (
     <AppLayout title="Reservations" subtitle="All bookings">
 
-         {/* ALERT UI */}
+      {/* ALERT */}
       {alert.message && (
         <div
           className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
-          ${alert.type === "success"
+          ${
+            alert.type === "success"
               ? "bg-green-50 border-green-500 text-green-700"
               : "bg-red-50 border-red-500 text-red-700"
-            }`}
+          }`}
         >
-          <span className="text-lg">
-            {alert.type === "success" ? "✓" : "✕"}
-          </span>
+          <span>{alert.type === "success" ? "✓" : "✕"}</span>
           <span>{alert.message}</span>
         </div>
       )}
@@ -155,6 +189,7 @@ export default function Reservations() {
               <th className="px-4 py-3">Check-out</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-right">Total</th>
+              <th className="px-4 py-3 text-right">Action</th>
             </tr>
           </thead>
 
@@ -162,9 +197,7 @@ export default function Reservations() {
             {reservations.map((r) => (
               <tr key={r._id} className="border-t hover:bg-muted/30">
 
-                <td className="px-4 py-3 font-medium">
-                  {r.user?.name}
-                </td>
+                <td className="px-4 py-3 font-medium">{r.user?.name}</td>
 
                 <td className="px-4 py-3 text-muted-foreground">
                   #{r.room?.roomId} · {r.room?.category}
@@ -179,21 +212,45 @@ export default function Reservations() {
                 </td>
 
                 <td className="px-4 py-3">
-                  <StatusPill status={r.status || "confirmed"} />
+                  <StatusPill status={r.status} />
                 </td>
 
                 <td className="px-4 py-3 text-right font-medium">
                   {fmtMoney(r.room?.price || 0)}
                 </td>
+
+                {/* ACTION COLUMN */}
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2">
+
+                    {getNextStatus(r.status) && (
+                      <button
+                        onClick={() =>
+                          updateStatus(r._id, getNextStatus(r.status))
+                        }
+                        className="px-3 py-1 text-sm bg-green-500 text-white rounded-md"
+                      >
+                        {getButtonLabel(r.status)}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => editsetOpen(true)}
+                      className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md"
+                    >
+                      Edit
+                    </button>
+
+                  </div>
+                </td>
+
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* =======================
-          MODAL
-      ======================= */}
+      {/* CREATE MODAL (UNCHANGED UI) */}
       {open && (
         <div
           className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50"
@@ -205,7 +262,6 @@ export default function Reservations() {
           >
             <h2 className="font-display text-xl">New reservation</h2>
 
-            {/* USER DROPDOWN */}
             <label className="block text-sm">
               User
               <select
@@ -216,14 +272,11 @@ export default function Reservations() {
               >
                 <option value="">Select Guest User</option>
                 {users.map((u) => (
-                  <option key={u._id} value={u._id}>
-                    {u.name}
-                  </option>
+                  <option key={u._id} value={u._id}>{u.name}</option>
                 ))}
               </select>
             </label>
 
-            {/* ROOM DROPDOWN */}
             <label className="block text-sm">
               Room
               <select
@@ -241,43 +294,23 @@ export default function Reservations() {
               </select>
             </label>
 
-            {/* DATES */}
             <div className="grid grid-cols-2 gap-3">
+              <input type="date" name="checkIn" value={form.checkIn} onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2" />
 
-              <input
-                type="date"
-                name="checkIn"
-                value={form.checkIn}
-                onChange={handleChange}
-                className="w-full bg-secondary border border-border rounded-md px-3 py-2"
-              />
-
-              <input
-                type="date"
-                name="checkOut"
-                value={form.checkOut}
-                onChange={handleChange}
-                className="w-full bg-secondary border border-border rounded-md px-3 py-2"
-              />
+              <input type="date" name="checkOut" value={form.checkOut} onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2" />
             </div>
 
-            {/* BUTTONS */}
             <div className="flex justify-end gap-2">
-
-              <button
-                onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm hover:bg-muted rounded-md"
-              >
+              <button onClick={() => setOpen(false)} className="px-4 py-2 text-sm hover:bg-muted rounded-md">
                 Cancel
               </button>
 
-              <button
-                onClick={createReservation}
-                className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-              >
+              <button onClick={createReservation}
+                className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md">
                 Confirm
               </button>
-
             </div>
           </div>
         </div>
