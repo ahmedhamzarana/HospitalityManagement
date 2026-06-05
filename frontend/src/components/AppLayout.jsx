@@ -60,7 +60,7 @@ export function AppLayout({ children, title, subtitle }) {
       { to: "/billing", label: "Billing", icon: Receipt },
       { to: "/reports", label: "Reports", icon: BarChart3 },
       { to: "/staff", label: "Staff", icon: UserCog },
-            { to: "/feedback", label: "Feedback", icon: MessageSquare },
+      { to: "/feedback", label: "Feedback", icon: MessageSquare },
 
     ];
   } else if (role === "receptionist") {
@@ -68,21 +68,27 @@ export function AppLayout({ children, title, subtitle }) {
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/rooms", label: "Rooms", icon: BedDouble },
       { to: "/reservations", label: "Reservations", icon: CalendarCheck },
+      { to: "/staff", label: "Staff", icon: UserCog },
+      { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
+      { to: "/billing", label: "Billing", icon: Receipt },
+
       { to: "/guests", label: "Guests", icon: Users },
-            { to: "/feedback", label: "Feedback", icon: MessageSquare },
+      { to: "/feedback", label: "Feedback", icon: MessageSquare },
     ];
   } else if (role === "housekeeping") {
     nav = [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
       { to: "/staff-tasks", label: "Staff Tasks", icon: UserCog },
+      { to: "/feedback", label: "Feedback", icon: MessageSquare },
     ];
   } else {
     nav = [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
-            { to: "/rooms", label: "Rooms", icon: BedDouble },
+      { to: "/rooms", label: "Rooms", icon: BedDouble },
       { to: "/reservations", label: "My Reservations", icon: CalendarCheck },
-            { to: "/feedback", label: "Feedback", icon: MessageSquare },
+      { to: "/billing", label: "Billing", icon: Receipt },
+      { to: "/feedback", label: "Feedback", icon: MessageSquare },
     ];
   }
 
@@ -120,11 +126,10 @@ export function AppLayout({ children, title, subtitle }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm ${
-                  active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm ${active
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 {item.label}
