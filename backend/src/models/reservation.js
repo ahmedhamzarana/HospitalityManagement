@@ -24,6 +24,7 @@ const reservationSchema = new mongoose.Schema(
         "confirmed",
         "checked_in",
         "checked_out",
+        "completed",
         "cancelled",
       ],
       default: "pending",

@@ -16,6 +16,7 @@ export default function Staff() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone:"",
     role: "",
     status: "",
   });
@@ -86,6 +87,7 @@ export default function Staff() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
+        phone: user.phone || "",
         role: user.role || "",
         status: user.status || "",
       });
@@ -157,6 +159,7 @@ export default function Staff() {
             <tr className="text-left">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -174,6 +177,10 @@ export default function Staff() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {u.email}
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {u.phone}
+                  </td>
+
 
                   <td className="px-4 py-3 capitalize">
                     {u.role}
@@ -252,7 +259,16 @@ export default function Staff() {
                 className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
               />
             </label>
-
+              <label className="block text-sm">
+              phone
+              <input
+                type="number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
             <label className="block text-sm">
               Role
               <select

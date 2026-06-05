@@ -9,18 +9,18 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
-    role: "guest",
-    status: "active",
   });
 
   const [errors, setErrors] = useState({});
 
-  // SAME ALERT STYLE AS LOGIN
   const [alert, setAlert] = useState({
     type: "",
     message: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +30,7 @@ export default function Register() {
       [name]: value,
     }));
 
+    // clear field error when user types
     setErrors((prev) => ({
       ...prev,
       [name]: "",
@@ -42,6 +43,8 @@ export default function Register() {
     setErrors({});
     setAlert({ type: "", message: "" });
 
+    setLoading(true);
+
     axios
       .post("http://localhost:5000/api/auth/register", formData)
       .then((response) => {
@@ -50,9 +53,17 @@ export default function Register() {
           message: "Account created successfully!",
         });
 
+        // reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          password: "",
+        });
+
         setTimeout(() => {
           navigate("/login");
-        }, 1000);
+        }, 2000);
       })
       .catch((error) => {
         const backendErrors = error.response?.data?.errors;
@@ -60,18 +71,32 @@ export default function Register() {
         if (backendErrors) {
           setErrors(backendErrors);
 
+          const message =
+            Object.values(backendErrors)[0] || "Invalid credentials";
+
           setAlert({
             type: "error",
-            message:
-              Object.values(backendErrors)[0] ||
-              "Validation error",
+            message,
           });
+
+          // auto hide after 3 seconds
+          setTimeout(() => {
+            setAlert({ type: "", message: "" });
+          }, 3000);
+
         } else {
           setAlert({
             type: "error",
             message: "Something went wrong. Please try again later.",
           });
+
+          setTimeout(() => {
+            setAlert({ type: "", message: "" });
+          }, 3000);
         }
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -94,7 +119,7 @@ export default function Register() {
             Join the <span className="text-gold">LuxuryStay</span> team
           </h2>
           <p className="mt-4 text-sidebar-foreground/70 max-w-md">
-            Create your staff account to access the system.
+            Create your account to access HMS.
           </p>
         </div>
 
@@ -113,22 +138,21 @@ export default function Register() {
           </div>
 
           <h1 className="font-display text-3xl text-foreground">
-            Staff Registration
+            Registration
           </h1>
 
           <p className="text-sm text-muted-foreground mt-1">
             Set up your access to HMS.
           </p>
 
-          {/* ALERT (SAME AS LOGIN STYLE) */}
+          {/* ALERT */}
           {alert.message && (
             <div
               className={`mt-4 p-3 rounded-md text-sm font-medium border
-              ${
-                alert.type === "error"
+              ${alert.type === "error"
                   ? "bg-red-50 text-red-700 border-red-200"
                   : "bg-green-50 text-green-700 border-green-200"
-              }`}
+                }`}
             >
               {alert.message}
             </div>
@@ -137,39 +161,76 @@ export default function Register() {
           <form onSubmit={handleSubmit}>
             <div className="mt-6 space-y-4">
 
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Full name"
-                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
-              />
+              <div>
+                <label className="text-sm font-medium">Name</label>
 
-              <input
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
-              />
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Full name"
+                  className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+                )}
+              </div>
 
-              <input
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="w-full h-10 px-3 rounded-md border bg-card text-sm"
-              />
+              <div>
+                <label className="text-sm font-medium">Email</label>
+
+                <input
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+                />
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Phone</label>
+
+                <input
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+                />
+                {errors.phone && (
+                  <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Password</label>
+
+                <input
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className="w-full h-10 px-3 rounded-md border bg-card text-sm"
+                />
+                {errors.password && (
+                  <p className="text-xs text-red-600 mt-1">{errors.password}</p>
+                )}
+              </div>
 
             </div>
 
             <button
               type="submit"
-              className="mt-6 w-full h-10 rounded-md bg-primary text-primary-foreground font-medium inline-flex items-center justify-center gap-2 hover:bg-primary/90"
+              disabled={loading}
+              className="mt-6 w-full h-10 rounded-md bg-primary text-primary-foreground font-medium inline-flex items-center justify-center gap-2 hover:bg-primary/90 disabled:opacity-60"
             >
               <UserPlus className="w-4 h-4" />
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
 
             <p className="mt-4 text-sm text-muted-foreground text-center">

@@ -4,8 +4,9 @@ const User = require('../models/users');
 // Get all users
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: { $ne: 'admin' } });
-    res.json(users);
+const users = await User.find({
+  role: { $nin: ['admin', 'guest'] }
+});    res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -59,7 +60,7 @@ exports.updateUser = async (req, res) => {
 
 
 exports.GetOnlyGuestUsers = async (req, res) => {  try {
-    const users = await User.find({ role: "guest" }).select("name role");
+    const users = await User.find({ role: "guest" });
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });

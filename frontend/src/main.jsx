@@ -10,7 +10,6 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Rooms from "./pages/Rooms.jsx";
 import Reservations from "./pages/Reservations.jsx";
-import CheckIn from "./pages/CheckIn.jsx";
 import Guests from "./pages/Guests.jsx";
 import Housekeeping from "./pages/Housekeeping.jsx";
 import Billing from "./pages/Billing.jsx";
@@ -54,15 +53,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <Reservations />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/checkin"
-          element={
-            <ProtectedRoute>
-              <CheckIn />
             </ProtectedRoute>
           }
         />

@@ -29,7 +29,7 @@ export default function Billing() {
       room: "#205 · Suite",
       checkIn: "2026-01-12",
       checkOut: "2026-01-15",
-      status: "OPEN",
+      status: "UNPAID",
       total: "$780.00",
       items: [
         { label: "Room Charges", amount: "$700.00" },
@@ -53,6 +53,7 @@ export default function Billing() {
               <th className="px-4 py-3 text-left">Room</th>
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-right">Total</th>
+              <th className="px-4 py-3 text-right">Action</th>
             </tr>
           </thead>
 
@@ -60,23 +61,38 @@ export default function Billing() {
             {invoices.map((i) => (
               <tr
                 key={i.id}
-                onClick={() => setActive(i.id)}
+
                 className="border-t hover:bg-muted/30 cursor-pointer"
               >
                 <td className="px-4 py-3 font-medium">{i.guest}</td>
                 <td className="px-4 py-3 text-muted-foreground">{i.room}</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      i.status === "PAID"
-                        ? "bg-green-500/20 text-green-600"
-                        : "bg-yellow-500/20 text-yellow-600"
-                    }`}
+                    className={`text-[10px] px-2 py-0.5 rounded-full ${i.status === "PAID"
+                      ? "bg-green-500/20 text-green-600"
+                      : "bg-yellow-500/20 text-yellow-600"
+                      }`}
                   >
                     {i.status}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right font-medium">{i.total}</td>
+                <td className="px-4 py-3 text-right">
+                  {i.status === "UNPAID" ?
+                    <button
+                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                    >
+                      PAID
+                    </button>
+                    :
+                    <button
+                      onClick={() => setActive(i.id)} className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                    >
+                      GET INVOICE
+                    </button>
+                  }
+
+                </td>
               </tr>
             ))}
           </tbody>

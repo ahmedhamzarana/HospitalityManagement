@@ -5,49 +5,75 @@ const generateToken = require('../utils/generateToken');
 // REGISTER
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
+
     let errors = {};
 
+    // Required fields
     if (!name) errors.name = 'Name is required';
     if (!email) errors.email = 'Email is required';
+    if (!phone) errors.phone = 'Phone Number is required';
     if (!password) errors.password = 'Password is required';
 
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (email && !emailRegex.test(email)) {
       errors.email = 'Invalid email format';
     }
 
+    // Phone validation
+    if (phone && phone.length < 11) {
+      errors.phone = 'Phone Number must be at least 11 digits';
+    }
+
+    // Password validation
     if (password && password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
 
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      errors.email = 'Email already exists';
+    // Only check DB if values exist
+    if (email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        errors.email = 'Email already exists';
+      }
     }
 
+    if (phone) {
+      const existingNumber = await User.findOne({ phone });
+      if (existingNumber) {
+        errors.phone = 'Phone Number already exists';
+      }
+    }
+
+    // Return errors early
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = await User.create({
       name,
       email,
+      phone,
       password: hashedPassword,
     });
 
-    res.status(201).json({
+    // (Optional improvement: return token)
+    const token = generateToken(user._id);
+
+    return res.status(201).json({
       message: 'Registration successful',
       redirect: '/login',
+      token, // optional but useful
       user,
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -63,7 +89,7 @@ exports.login = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (email && !emailRegex.test(email)) {
-      errors.email = 'Invalid email format';
+      errors.email = 'Invalid Email format';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -75,7 +101,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         errors: {
-          email: 'Invalid email or password',
+          email: 'Invalid Email ',
         },
       });
     }
@@ -85,7 +111,7 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         errors: {
-          password: 'Invalid email or password',
+          password: 'Invalid Password',
         },
       });
     }
@@ -99,6 +125,7 @@ exports.login = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        phone:user.phone,
         role: user.role
       }
     });

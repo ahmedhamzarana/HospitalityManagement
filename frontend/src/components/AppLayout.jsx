@@ -42,7 +42,6 @@ export function AppLayout({ children, title, subtitle }) {
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/rooms", label: "Rooms", icon: BedDouble },
       { to: "/reservations", label: "Reservations", icon: CalendarCheck },
-      { to: "/checkin", label: "Check-in / out", icon: LogIn },
       { to: "/guests", label: "Guests", icon: Users },
       { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
       { to: "/billing", label: "Billing", icon: Receipt },
@@ -61,14 +60,16 @@ export function AppLayout({ children, title, subtitle }) {
       { to: "/billing", label: "Billing", icon: Receipt },
       { to: "/reports", label: "Reports", icon: BarChart3 },
       { to: "/staff", label: "Staff", icon: UserCog },
+            { to: "/feedback", label: "Feedback", icon: MessageSquare },
+
     ];
   } else if (role === "receptionist") {
     nav = [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/rooms", label: "Rooms", icon: BedDouble },
       { to: "/reservations", label: "Reservations", icon: CalendarCheck },
-      { to: "/checkin", label: "Check-in / out", icon: LogIn },
       { to: "/guests", label: "Guests", icon: Users },
+            { to: "/feedback", label: "Feedback", icon: MessageSquare },
     ];
   } else if (role === "housekeeping") {
     nav = [

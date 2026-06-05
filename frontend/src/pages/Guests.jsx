@@ -1,165 +1,321 @@
-import { useState } from "react";
-import { Plus, Star } from "lucide-react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "../components/AppLayout.jsx";
+import axios from "axios";
 
 export default function Guests() {
   const [open, setOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  // ALERT STATE (NEW)
+  const [alert, setAlert] = useState({
+    message: "",
+    type: "",
+  });
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone:"",
+    role: "",
+    status: "",
+  });
+
+  const token = localStorage.getItem("token");
+
+  // AUTO HIDE ALERT
+  useEffect(() => {
+    if (alert.message) {
+      const timer = setTimeout(() => {
+        setAlert({ message: "", type: "" });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
+
+  // FETCH USERS
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/users/all/guests",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUsers(response.data.users || response.data);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+
+      setAlert({
+        message: "Failed to load users",
+        type: "error",
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // INPUT CHANGE
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // EDIT USER
+  const handleEdit = async (id) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/users/get/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const user = response.data;
+
+      setSelectedUserId(id);
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        role: user.role || "",
+        status: user.status || "",
+      });
+
+      setOpen(true);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+
+      setAlert({
+        message: "Failed to load user details",
+        type: "error",
+      });
+    }
+  };
+
+  // UPDATE USER
+  const handleUpdate = async () => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/users/update/${selectedUserId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAlert({
+        message: "User updated successfully",
+        type: "success",
+      });
+
+      setOpen(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("Update Error:", error);
+
+      setAlert({
+        message:
+          error.response?.data?.error || "Failed to update user",
+        type: "error",
+      });
+    }
+  };
 
   return (
-    <AppLayout title="Guests" subtitle="3 profiles · 1 VIP">
+    <AppLayout title="Staff & Roles" subtitle="Admin: manage team">
 
-      {/* HEADER ACTION */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90"
+      {/* ALERT UI */}
+      {alert.message && (
+        <div
+          className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
+          ${alert.type === "success"
+              ? "bg-green-50 border-green-500 text-green-700"
+              : "bg-red-50 border-red-500 text-red-700"
+            }`}
         >
-          <Plus className="w-4 h-4" /> New guest
-        </button>
+          <span className="text-lg">
+            {alert.type === "success" ? "✓" : "✕"}
+          </span>
+          <span>{alert.message}</span>
+        </div>
+      )}
+      {/* TABLE */}
+      <div className="card-elevated overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary text-xs uppercase text-muted-foreground">
+            <tr className="text-left">
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Phone</th>
+              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {users.length > 0 ? (
+              users.map((u) => (
+                <tr key={u._id} className="border-t">
+                  <td className="px-4 py-3 font-medium">
+                    {u.name}
+                  </td>
+
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {u.email}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {u.phone}
+                  </td>
+
+
+                  <td className="px-4 py-3 capitalize">
+                    {u.role}
+                  </td>
+
+                  <td className="px-4 py-3">
+                    {(() => {
+                      let statusClass = "";
+
+                      if (u.status === "active") {
+                        statusClass = "bg-green-500/10 text-green-600 border-green-500/20";
+                      } else if (u.status === "inactive" || u.status === "deactive") {
+                        statusClass = "bg-red-500/10 text-red-600 border-red-500/20";
+                      } else {
+                        statusClass = "bg-gray-500/10 text-gray-600 border-gray-500/20";
+                      }
+
+                      return (
+                        <span className={`text-xs px-2 py-1 rounded-full border capitalize ${statusClass}`}>
+                          {u.status}
+                        </span>
+                      );
+                    })()}
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleEdit(u._id)}
+                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="5"
+                  className="px-4 py-6 text-center text-muted-foreground"
+                >
+                  No staff members found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* GUEST CARDS */}
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-
-        <div className="card-elevated p-5">
-          <div className="flex justify-between">
-            <div>
-              <div className="font-display text-lg flex items-center gap-2">
-                John Smith
-                <Star className="w-4 h-4 fill-gold text-gold" />
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Member since 2024-01-10
-              </div>
-            </div>
-
-            <div className="w-10 h-10 rounded-full bg-secondary text-primary grid place-items-center font-semibold text-sm">
-              JS
-            </div>
-          </div>
-
-          <div className="text-sm mt-3 text-muted-foreground">
-            john@example.com
-          </div>
-          <div className="text-sm text-muted-foreground">
-            +92 300 1234567
-          </div>
-
-          <div className="text-xs mt-3 bg-secondary px-3 py-2 rounded-md">
-            <b>Preferences:</b> High floor, extra pillows
-          </div>
-        </div>
-
-        <div className="card-elevated p-5">
-          <div className="flex justify-between">
-            <div>
-              <div className="font-display text-lg">Sarah Khan</div>
-              <div className="text-xs text-muted-foreground">
-                Member since 2023-09-22
-              </div>
-            </div>
-
-            <div className="w-10 h-10 rounded-full bg-secondary text-primary grid place-items-center font-semibold text-sm">
-              SK
-            </div>
-          </div>
-
-          <div className="text-sm mt-3 text-muted-foreground">
-            sarah@example.com
-          </div>
-          <div className="text-sm text-muted-foreground">
-            +92 301 9876543
-          </div>
-        </div>
-
-        <div className="card-elevated p-5">
-          <div className="flex justify-between">
-            <div>
-              <div className="font-display text-lg">Ali Ahmed</div>
-              <div className="text-xs text-muted-foreground">
-                Member since 2025-03-15
-              </div>
-            </div>
-
-            <div className="w-10 h-10 rounded-full bg-secondary text-primary grid place-items-center font-semibold text-sm">
-              AA
-            </div>
-          </div>
-
-          <div className="text-sm mt-3 text-muted-foreground">
-            ali@example.com
-          </div>
-          <div className="text-sm text-muted-foreground">
-            +92 302 5556677
-          </div>
-
-          <div className="text-xs mt-3 bg-secondary px-3 py-2 rounded-md">
-            <b>Preferences:</b> Late checkout
-          </div>
-        </div>
-
-      </div>
-
-      {/* MODAL (OPEN / CLOSE CONTROLLED) */}
+      {/* MODAL */}
       {open && (
-       <div className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50">
-  <div className="card-elevated w-full max-w-md p-6 space-y-3">
+        <div className="fixed inset-0 bg-black/40 grid place-items-center p-4 z-50">
+          <div className="card-elevated w-full max-w-md p-6 space-y-4 bg-background rounded-lg">
+            <h2 className="font-display text-xl">
+              Edit Staff Member
+            </h2>
 
-    <h2 className="font-display text-xl">New guest</h2>
+            <label className="block text-sm">
+              Name
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
 
-    <label className="block text-sm capitalize">
-      Name
-      <input
-        className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        placeholder="John Smith"
-      />
-    </label>
+            <label className="block text-sm">
+              Email
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
+              <label className="block text-sm">
+              phone
+              <input
+                type="number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
+            <label className="block text-sm">
+              Role
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="receptionist">Receptionist</option>
+                <option value="housekeeping">Housekeeping</option>
+                <option value="guest">Guest</option>
+              </select>
+            </label>
 
-    <label className="block text-sm capitalize">
-      Email
-      <input
-        className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        placeholder="john@example.com"
-      />
-    </label>
+            <label className="block text-sm">
+              Status
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              >
+                <option value="active">Active</option>
+                <option value="deactive">Deactive</option>
+              </select>
+            </label>
 
-    <label className="block text-sm capitalize">
-      Phone
-      <input
-        className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        placeholder="+92 300 1234567"
-      />
-    </label>
-
-    <label className="block text-sm capitalize">
-      Preferences
-      <input
-        className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        placeholder="High floor, extra pillows"
-      />
-    </label>
-
-    <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" />
-      VIP guest
-    </label>
-
-    <div className="flex justify-end gap-2">
- <button
+            <div className="flex justify-end gap-2">
+              <button
                 onClick={() => setOpen(false)}
                 className="px-4 py-2 text-sm hover:bg-muted rounded-md"
               >
                 Cancel
               </button>
-      <button className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md">
-        Save
-      </button>
-    </div>
 
-  </div>
-</div>
+              <button
+                onClick={handleUpdate}
+                className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-
     </AppLayout>
   );
 }
