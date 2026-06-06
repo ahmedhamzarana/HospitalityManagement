@@ -5,7 +5,7 @@ import axios from "axios";
 
 export default function Feedback() {
   const token = localStorage.getItem("token");
-
+  const role = localStorage.getItem("role");
   const [feedbacks, setFeedbacks] = useState([]);
   const [form, setForm] = useState({ rating: 5, comment: "" });
   const [alert, setAlert] = useState({ message: "", type: "" });
@@ -130,9 +130,8 @@ export default function Feedback() {
             </article>
           ))}
         </div>
-
         {/* FORM */}
-        <div className="card-elevated p-5 h-fit space-y-3">
+        {role === "guest" ? <div className="card-elevated p-5 h-fit space-y-3">
           <h2 className="font-display text-lg">Capture feedback</h2>
 
           {/* RATING */}
@@ -177,7 +176,8 @@ export default function Feedback() {
           >
             Submit
           </button>
-        </div>
+        </div>: <div></div>}
+       
       </div>
     </AppLayout>
   );
