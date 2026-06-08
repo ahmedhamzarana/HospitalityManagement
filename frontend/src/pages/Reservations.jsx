@@ -29,7 +29,20 @@ export default function Reservations() {
   const [reservations, setReservations] = useState([]);
 
   const [alert, setAlert] = useState({ message: "", type: "" });
+  // =======================
+  // FORM Date Constraints
+  // =======================
+  const today = new Date().toISOString().split("T")[0];
 
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const tomorrowDate = tomorrow
+  .toISOString()
+  .split("T")[0];
+// =======================
+// FORM STATE
+// =======================
   const [form, setForm] = useState({
     _id: null,
     user: "",
@@ -88,9 +101,37 @@ export default function Reservations() {
   // =======================
   // FORM
   // =======================
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "checkIn") {
+    setForm((prev) => ({
+      ...prev,
+      checkIn: value,
+      checkOut: "",
+    }));
+    return;
+  }
+
+  if (name === "checkOut") {
+    const checkInDate = new Date(form.checkIn);
+    const checkOutDate = new Date(value);
+
+    if (checkOutDate <= checkInDate) {
+      setAlert({
+        message:
+          "Check-out must be after Check-in date",
+        type: "error",
+      });
+      return;
+    }
+  }
+
+  setForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
   const resetForm = () => {
     setForm({
@@ -334,28 +375,40 @@ export default function Reservations() {
       </label>
 
       {/* Check-in */}
-      <label className="block text-sm">
-        Check-in
-        <input
-          type="date"
-          name="checkIn"
-          value={form.checkIn}
-          onChange={handleChange}
-          className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        />
-      </label>
+<label className="block text-sm">
+  Check-in
+  <input
+    type="date"
+    name="checkIn"
+    value={form.checkIn}
+    onChange={handleChange}
+    min={today}
+    className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+  />
+</label>
 
       {/* Check-out */}
-      <label className="block text-sm">
-        Check-out
-        <input
-          type="date"
-          name="checkOut"
-          value={form.checkOut}
-          onChange={handleChange}
-          className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        />
-      </label>
+<label className="block text-sm">
+  Check-out
+  <input
+    type="date"
+    name="checkOut"
+    value={form.checkOut}
+    onChange={handleChange}
+    min={
+      form.checkIn
+        ? new Date(
+            new Date(form.checkIn).setDate(
+              new Date(form.checkIn).getDate() + 1
+            )
+          )
+            .toISOString()
+            .split("T")[0]
+        : tomorrowDate
+    }
+    className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+  />
+</label>
 
       {/* Buttons */}
       <div className="flex justify-end gap-2">

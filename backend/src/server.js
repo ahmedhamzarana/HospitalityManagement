@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes')
 const reservationRoutes = require('./routes/reservationRoutes')
+const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/reservation', reservationRoutes);
-
+app.use('/api/tasks', taskRoutes);
 app.listen(5000, () => {
   console.log('Server running on port 5000');
 });
