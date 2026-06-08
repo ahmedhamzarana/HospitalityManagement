@@ -8,7 +8,7 @@ const fmtMoney = (n) => `$${n}`;
 export default function Rooms() {
   const [open, setOpen] = useState(false);
   const [rooms, setRooms] = useState([]);
-
+  const role = localStorage.getItem("role");
   const [alert, setAlert] = useState({
     message: "",
     type: "",
@@ -167,7 +167,7 @@ export default function Rooms() {
             maintenance
           </button>
         </div>
-
+        {role !== "guest" && (
         <button
           onClick={() => setOpen(true)}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90"
@@ -175,6 +175,7 @@ export default function Rooms() {
           <Plus className="w-4 h-4" />
           New Room
         </button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
