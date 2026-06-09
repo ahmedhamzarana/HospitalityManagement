@@ -52,6 +52,7 @@ export default function Reservations() {
   });
 
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
   // =======================
   // FETCH DATA
@@ -259,7 +260,17 @@ const handleChange = (e) => {
       </div>
 
       {/* TABLE */}
-      <div className="card-elevated overflow-hidden"> <table className="w-full text-sm"> <thead> <tr className="text-left bg-secondary text-xs uppercase"> <th className="px-4 py-3">Guest</th> <th className="px-4 py-3">Room</th> <th className="px-4 py-3">Check-in</th> <th className="px-4 py-3">Check-out</th> <th className="px-4 py-3">Status</th> <th className="px-4 py-3 text-right">Total</th> <th className="px-4 py-3 text-right">Action</th> </tr> </thead>
+      <div className="card-elevated overflow-hidden">
+         <table className="w-full text-sm"> 
+          <thead> 
+            <tr className="text-left bg-secondary text-xs uppercase">
+               <th className="px-4 py-3">Guest</th> <th className="px-4 py-3">Room</th>
+                <th className="px-4 py-3">Check-in</th> <th className="px-4 py-3">Check-out</th>
+                 <th className="px-4 py-3">Status</th> <th className="px-4 py-3 text-right">Total</th>
+                 { role !== "guest" ? 
+                  <th className="px-4 py-3 text-right">Action</th> : <></>                  }
+                   </tr>
+           </thead>
 
         <tbody>
           {reservations.map((r) => (
@@ -281,7 +292,9 @@ const handleChange = (e) => {
               <td className="px-4 py-3 text-right">
                 {fmtMoney(r.room?.price || 0)}
               </td>
-
+              {role === "guest"? 
+                <></>
+              :
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-2">
 
@@ -319,7 +332,7 @@ const handleChange = (e) => {
 
                 </div>
               </td>
-
+             }
             </tr>
           ))}
         </tbody>

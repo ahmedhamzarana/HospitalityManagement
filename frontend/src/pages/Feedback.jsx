@@ -176,7 +176,7 @@ export default function Feedback() {
           >
             Submit
           </button>
-        </div>: <div></div>}
+        </div>: <></>}
        
       </div>
     </AppLayout>

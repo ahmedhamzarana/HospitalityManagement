@@ -52,11 +52,22 @@ exports.createReservation = async (req, res) => {
 // GET ALL
 exports.getAllReservation = async (req, res) => {
   try {
-    const reservations = await Reservation.find()
+    let reservations;
+    if(req.user.role === "guest"){
+          const reservations = await Reservation.find({user: req.user.id})
+      .populate("user", "name")
+      .populate("room", "roomId category price status");
+
+      return res.json(reservations);
+    }else{
+       const reservations = await Reservation.find()
       .populate("user", "name")
       .populate("room", "roomId category price status");
 
     res.json(reservations);
+    }
+
+   
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
