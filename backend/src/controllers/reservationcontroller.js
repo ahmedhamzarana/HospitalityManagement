@@ -1,6 +1,6 @@
 const Reservation = require("../models/reservation");
 const Room = require("../models/room");
-
+const Invoice = require("../models/invoice");
 // CREATE
 exports.createReservation = async (req, res) => {
   try {
@@ -53,21 +53,33 @@ exports.createReservation = async (req, res) => {
 exports.getAllReservation = async (req, res) => {
   try {
     let reservations;
-    if(req.user.role === "guest"){
-          const reservations = await Reservation.find({user: req.user.id})
-      .populate("user", "name")
-      .populate("room", "roomId category price status");
 
-      return res.json(reservations);
-    }else{
-       const reservations = await Reservation.find()
-      .populate("user", "name")
-      .populate("room", "roomId category price status");
-
-    res.json(reservations);
+    if (req.user.role === "guest") {
+      reservations = await Reservation.find({
+        user: req.user.id,
+      })
+        .populate("user", "name")
+        .populate("room", "roomId category price status");
+    } else {
+      reservations = await Reservation.find()
+        .populate("user", "name")
+        .populate("room", "roomId category price status");
     }
 
-   
+    const data = await Promise.all(
+      reservations.map(async (r) => {
+        const invoice = await Invoice.findOne({
+          reservation: r._id,
+        });
+
+        return {
+          ...r.toObject(),
+          hasInvoice: !!invoice,
+        };
+      })
+    );
+
+    res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

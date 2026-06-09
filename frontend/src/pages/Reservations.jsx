@@ -221,7 +221,33 @@ const handleChange = (e) => {
       });
     }
   };
+  const generateInvoice = async (reservation) => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/invoices/create",
+      { reservationId: reservation._id },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
+    setAlert({
+      message: "Invoice generated successfully",
+      type: "success",
+    });
+
+    fetchReservation();
+  } catch (err) {
+    setAlert({
+      message:
+        err.response?.data?.message ||
+        "Failed to generate invoice",
+      type: "error",
+    });
+  }
+};
 
   // =======================
   // UI HELPERS
@@ -322,13 +348,20 @@ const handleChange = (e) => {
 
                   {/* INVOICE ONLY AFTER COMPLETION */}
                   {r.status === "completed" && (
-                    <button
-                      onClick={() => generateInvoice(r)}
-                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                    >
-                      Generate Invoice
-                    </button>
-                  )}
+  <button
+    disabled={r.hasInvoice}
+    onClick={() => generateInvoice(r)}
+    className={`px-4 py-2 text-sm rounded-md ${
+      r.hasInvoice
+        ? "bg-gray-400 text-white cursor-not-allowed"
+        : "bg-primary text-primary-foreground"
+    }`}
+  >
+    {r.hasInvoice
+      ? "Invoice Generated"
+      : "Generate Invoice"}
+  </button>
+)}
 
                 </div>
               </td>

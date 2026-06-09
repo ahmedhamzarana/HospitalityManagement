@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
-const InvoiceSchema = new mongoose.Schema(
+const invoiceSchema = new mongoose.Schema(
   {
     reservation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Reservation",
       required: true,
+      unique: true, // IMPORTANT: prevents duplicate invoice
     },
 
     guest: {
@@ -20,20 +21,25 @@ const InvoiceSchema = new mongoose.Schema(
       required: true,
     },
 
+    items: [
+      {
+        label: String,
+        amount: Number,
+      },
+    ],
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
     status: {
       type: String,
       enum: ["PAID", "UNPAID"],
       default: "UNPAID",
     },
-    totalAmount: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("Invoice", InvoiceSchema);
+module.exports = mongoose.model("Invoice", invoiceSchema);
