@@ -15,11 +15,11 @@ export default function Billing() {
       setLoading(true);
 
       const { data } = await axios.get("http://localhost:5000/api/invoices/all",
-         {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setInvoices(data.invoices || []);
@@ -70,9 +70,7 @@ export default function Billing() {
               <th className="px-4 py-3 text-left">Room</th>
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-right">Total</th>
-              {role !== "guest" && (
                 <th className="px-4 py-3 text-right">Action</th>
-              )}
             </tr>
           </thead>
 
@@ -111,11 +109,10 @@ export default function Billing() {
 
                   <td className="px-4 py-3">
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full ${
-                        i.status === "PAID"
+                      className={`text-[10px] px-2 py-0.5 rounded-full ${i.status === "PAID"
                           ? "bg-green-500/20 text-green-600"
                           : "bg-yellow-500/20 text-yellow-600"
-                      }`}
+                        }`}
                     >
                       {i.status}
                     </span>
@@ -124,25 +121,15 @@ export default function Billing() {
                   <td className="px-4 py-3 text-right font-medium">
                     ${i.totalAmount}
                   </td>
-                  {role !== "guest" && (
-                    <td className="px-4 py-3 text-right">
-                      {i.status === "UNPAID" ? (
-                        <button
-                          onClick={() => markAsPaid(i._id)}
-                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                      >
-                        PAID
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setActive(i._id)}
-                        className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                      >
-                        GET INVOICE
-                      </button>
-                    )}
+                  <td className="px-4 py-3 text-right">
+
+                    <button
+                      onClick={() => setActive(i._id)}
+                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                    >
+                      GET INVOICE
+                    </button>
                   </td>
-                  )}
                 </tr>
               ))
             )}
@@ -225,7 +212,14 @@ export default function Billing() {
                   Status
                 </div>
 
-                <div>{current.status}</div>
+                <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full ${current.status === "PAID"
+                          ? "bg-green-500/20 text-green-600"
+                          : "bg-yellow-500/20 text-yellow-600"
+                        }`}
+                    >
+                      {current.status}
+                    </span>
               </div>
             </div>
 
@@ -245,7 +239,7 @@ export default function Billing() {
                   <tr className="border-b">
                     <td className="py-2">Room Charges</td>
                     <td className="py-2 text-right">
-                      ${current.price}
+                      ${current.totalAmount}
                     </td>
                   </tr>
                 )}
@@ -261,6 +255,21 @@ export default function Billing() {
 
             {/* ACTIONS */}
             <div className="flex justify-end gap-2 mt-6">
+{role !== "guest" ? (
+  current.status === "UNPAID" ? (
+    <button
+      onClick={() => markAsPaid(current._id)}
+      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+    >
+      Mark as Paid
+    </button>
+  ) : (
+    <button className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md">
+      Paid
+    </button>
+  )
+) : null}
+         
               <button
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-md hover:bg-muted"

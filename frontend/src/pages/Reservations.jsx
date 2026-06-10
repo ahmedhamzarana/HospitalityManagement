@@ -293,102 +293,121 @@ export default function Reservations() {
               <th className="px-4 py-3">Guest</th> <th className="px-4 py-3">Room</th>
               <th className="px-4 py-3">Check-in</th> <th className="px-4 py-3">Check-out</th>
               <th className="px-4 py-3">Status</th> <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-right">Action</th>
+              <th className="px-4 py-3 text-right">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {reservations.map((r) => (
-              <tr key={r._id} className="border-t">
-
+              <tr key={r._id}>
                 <td className="px-4 py-3">{r.user?.name}</td>
+
                 <td className="px-4 py-3">
                   #{r.room?.roomId} · {r.room?.category}
                 </td>
+
                 <td className="px-4 py-3">
                   {new Date(r.checkIn).toDateString()}
                 </td>
+
                 <td className="px-4 py-3">
                   {new Date(r.checkOut).toDateString()}
                 </td>
+
                 <td className="px-4 py-3">
-                  <StatusPill status={r.status} />
+                  <span
+                    className={
+                      r.status === "pending"
+                        ? "bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs"
+                        : r.status === "confirmed"
+                          ? "bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs"
+                          : r.status === "checked_in"
+                            ? "bg-purple-200 text-purple-800 px-2 py-1 rounded-full text-xs"
+                            : r.status === "checked_out"
+                              ? "bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full text-xs"
+                              : r.status === "completed"
+                                ? "bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs"
+                                : r.status === "cancelled"
+                                  ? "bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs"
+                                  : "bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs"
+                    }
+                  >
+                    {r.status}
+                  </span>
                 </td>
+
                 <td className="px-4 py-3 text-right">
                   {fmtMoney(r.room?.price || 0)}
                 </td>
-                {role === "guest" ?
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
 
-                      {r.status !== "completed" && r.status !== "cancelled" && (
-                        <button
-                          onClick={() => cancelReservation(r._id)}
-                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2">
 
-                      {r.status === "completed" && (
-                        <button
-                          disabled={r.hasInvoice}
-                          onClick={() => generateInvoice(r)}
-                          className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
+                    {role === "guest" && (
+                      <>
+                        {r.status !== "completed" && r.status !== "cancelled" && (
+                          <button
+                            onClick={() => cancelReservation(r._id)}
+                            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                          >
+                            Cancel
+                          </button>
+                        )}
+
+                        {r.status === "completed" && (
+                          <button
+                            disabled={r.hasInvoice}
+                            onClick={() => generateInvoice(r)}
+                            className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
                               ? "bg-gray-400 text-white cursor-not-allowed"
                               : "bg-primary text-primary-foreground"
-                            }`}
-                        >
-                          {r.hasInvoice
-                            ? "Invoice Generated"
-                            : "Generate Invoice"}
-                        </button>
-                      )}
+                              }`}
+                          >
+                            {r.hasInvoice ? "Invoice Generated" : "Generate Invoice"}
+                          </button>
+                        )}
+                      </>
+                    )}
 
-                    </div>
-                  </td>
-                
-                :
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      {getNextStatus(r.status) && (
-                        <button
-                          onClick={() =>
-                            updateStatus(r._id, getNextStatus(r.status))
-                          }
-                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                        >
-                          {getButtonLabel(r.status)}
-                        </button>
-                      )}
+                    {role !== "guest" && (
+                      <>
+                        {getNextStatus(r.status) && (
+                          <button
+                            onClick={() =>
+                              updateStatus(r._id, getNextStatus(r.status))
+                            }
+                            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                          >
+                            {getButtonLabel(r.status)}
+                          </button>
+                        )}
 
-                      {r.status !== "completed" && r.status !== "cancelled" && (
-                        <button
-                          onClick={() => cancelReservation(r._id)}
-                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                        {r.status !== "completed" && r.status !== "cancelled" && (
+                          <button
+                            onClick={() => cancelReservation(r._id)}
+                            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                          >
+                            Cancel
+                          </button>
+                        )}
 
-                      {r.status === "completed" && (
-                        <button
-                          disabled={r.hasInvoice}
-                          onClick={() => generateInvoice(r)}
-                          className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
+                        {r.status === "completed" && (
+                          <button
+                            disabled={r.hasInvoice}
+                            onClick={() => generateInvoice(r)}
+                            className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
                               ? "bg-gray-400 text-white cursor-not-allowed"
                               : "bg-primary text-primary-foreground"
-                            }`}
-                        >
-                          {r.hasInvoice
-                            ? "Invoice Generated"
-                            : "Generate Invoice"}
-                        </button>
-                      )}
+                              }`}
+                          >
+                            {r.hasInvoice ? "Invoice Generated" : "Generate Invoice"}
+                          </button>
+                        )}
+                      </>
+                    )}
 
-                    </div>
-                  </td>
-                }
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -14,23 +14,23 @@ export default function Rooms() {
     type: "",
   });
   const getStatusColor = (status) => {
-  switch (status) {
-    case "available":
-      return "bg-green-100 text-green-700 border-green-300";
+    switch (status) {
+      case "available":
+        return "bg-green-100 text-green-700 border-green-300";
 
-    case "occupied":
-      return "bg-red-100 text-red-700 border-red-300";
+      case "occupied":
+        return "bg-red-100 text-red-700 border-red-300";
 
-    case "cleaning":
-      return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case "cleaning":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
 
-    case "maintenance":
-      return "bg-blue-100 text-blue-700 border-blue-300";
+      case "maintenance":
+        return "bg-blue-100 text-blue-700 border-blue-300";
 
-    default:
-      return "bg-gray-100 text-gray-700 border-gray-300";
-  }
-};
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300";
+    }
+  };
   const [formData, setFormData] = useState({
     roomId: "",
     floor: "",
@@ -168,54 +168,54 @@ export default function Rooms() {
           </button>
         </div>
         {role !== "guest" && (
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90"
-        >
-          <Plus className="w-4 h-4" />
-          New Room
-        </button>
+          <button
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm hover:opacity-90"
+          >
+            <Plus className="w-4 h-4" />
+            New Room
+          </button>
         )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-  {rooms.map((r) => (
-  <div
-    key={r.roomId}
-    className="card-elevated p-4 border border-border rounded-lg"
-  >
-    <div className="flex items-start justify-between">
-      <div className="font-display text-2xl text-primary">
-        #{r.roomId}
-      </div>
+        {rooms.map((r) => (
+          <div
+            key={r.roomId}
+            className="card-elevated p-4 border border-border rounded-lg"
+          >
+            <div className="flex items-start justify-between">
+              <div className="font-display text-2xl text-primary">
+                #{r.roomId}
+              </div>
 
-      <StatusPill
-      status={r.status}
-      className={getStatusColor(r.status)}
-    />
-    </div>
+              <StatusPill
+                status={r.status}
+                className={getStatusColor(r.status)}
+              />
+            </div>
 
-    <div className="text-xs text-muted-foreground mt-1">
-      Floor {r.floor} · {r.guests} guests
-    </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Floor {r.floor} · {r.guests} guests
+            </div>
 
-    <div className="text-sm font-medium mt-2 capitalize">
-      {r.category}
-    </div>
+            <div className="text-sm font-medium mt-2 capitalize">
+              {r.category}
+            </div>
 
-    <div className="text-sm text-accent font-semibold mt-1">
-      {fmtMoney(r.price)}/night
-    </div>
+            <div className="text-sm text-accent font-semibold mt-1">
+              {fmtMoney(r.price)}/night
+            </div>
 
-    <div
-      className={`mt-3 w-full text-xs border rounded-md px-2 py-2 capitalize text-center font-medium ${getStatusColor(
-        r.status
-      )}`}
-    >
-      {r.status}
-    </div>
-  </div>
-))}
+            <div
+              className={`mt-3 w-full text-xs border rounded-md px-2 py-2 capitalize text-center font-medium ${getStatusColor(
+                r.status
+              )}`}
+            >
+              {r.status}
+            </div>
+          </div>
+        ))}
       </div>
 
       {open && (
