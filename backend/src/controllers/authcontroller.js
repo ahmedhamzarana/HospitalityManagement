@@ -80,7 +80,7 @@ exports.register = async (req, res) => {
 // LOGIN
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password   } = req.body;
     let errors = {};
 
     if (!email) errors.email = 'Email is required';

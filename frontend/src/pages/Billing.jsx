@@ -245,7 +245,7 @@ export default function Billing() {
                   <tr className="border-b">
                     <td className="py-2">Room Charges</td>
                     <td className="py-2 text-right">
-                      ${current.totalAmount}
+                      ${current.price}
                     </td>
                   </tr>
                 )}

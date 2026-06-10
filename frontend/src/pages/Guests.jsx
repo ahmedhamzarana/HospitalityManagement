@@ -16,7 +16,7 @@ export default function Guests() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone:"",
+    phone: "",
     role: "",
     status: "",
   });
@@ -259,7 +259,7 @@ export default function Guests() {
                 className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
               />
             </label>
-              <label className="block text-sm">
+            <label className="block text-sm">
               phone
               <input
                 type="number"

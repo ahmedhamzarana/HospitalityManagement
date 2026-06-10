@@ -60,7 +60,13 @@ exports.updateUser = async (req, res) => {
 
 
 exports.GetOnlyGuestUsers = async (req, res) => {  try {
-    const users = await User.find({ role: "guest" });
+  let users;
+
+  if (req.user.role === "guest") {
+    users = await User.find({ _id: req.user.id, role: "guest" });
+  } else {
+    users = await User.find({ role: "guest" });
+  }
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });

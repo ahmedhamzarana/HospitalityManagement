@@ -82,11 +82,10 @@ export default function Feedback() {
       {alert.message && (
         <div
           className={`mb-4 flex items-center gap-2 p-3 text-sm rounded-md border-l-4 shadow-sm
-          ${
-            alert.type === "success"
+          ${alert.type === "success"
               ? "bg-green-50 border-green-500 text-green-700"
               : "bg-red-50 border-red-500 text-red-700"
-          }`}
+            }`}
         >
           <span className="text-lg">
             {alert.type === "success" ? "✓" : "✕"}
@@ -114,11 +113,10 @@ export default function Feedback() {
                   {[1, 2, 3, 4, 5].map((n) => (
                     <Star
                       key={n}
-                      className={`w-4 h-4 ${
-                        n <= f.rating
+                      className={`w-4 h-4 ${n <= f.rating
                           ? "fill-gold text-gold"
                           : "text-muted-foreground/30"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -144,11 +142,10 @@ export default function Feedback() {
                   onClick={() =>
                     setForm((prev) => ({ ...prev, rating: n }))
                   }
-                  className={`w-6 h-6 cursor-pointer ${
-                    n <= form.rating
+                  className={`w-6 h-6 cursor-pointer ${n <= form.rating
                       ? "fill-gold text-gold"
                       : "text-muted-foreground/40"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -176,8 +173,8 @@ export default function Feedback() {
           >
             Submit
           </button>
-        </div>: <></>}
-       
+        </div> : <></>}
+
       </div>
     </AppLayout>
   );

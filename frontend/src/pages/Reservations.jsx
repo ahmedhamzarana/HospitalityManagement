@@ -38,11 +38,11 @@ export default function Reservations() {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const tomorrowDate = tomorrow
-  .toISOString()
-  .split("T")[0];
-// =======================
-// FORM STATE
-// =======================
+    .toISOString()
+    .split("T")[0];
+  // =======================
+  // FORM STATE
+  // =======================
   const [form, setForm] = useState({
     _id: null,
     user: "",
@@ -102,37 +102,37 @@ export default function Reservations() {
   // =======================
   // FORM
   // =======================
-const handleChange = (e) => {
-  const { name, value } = e.target;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  if (name === "checkIn") {
-    setForm((prev) => ({
-      ...prev,
-      checkIn: value,
-      checkOut: "",
-    }));
-    return;
-  }
-
-  if (name === "checkOut") {
-    const checkInDate = new Date(form.checkIn);
-    const checkOutDate = new Date(value);
-
-    if (checkOutDate <= checkInDate) {
-      setAlert({
-        message:
-          "Check-out must be after Check-in date",
-        type: "error",
-      });
+    if (name === "checkIn") {
+      setForm((prev) => ({
+        ...prev,
+        checkIn: value,
+        checkOut: "",
+      }));
       return;
     }
-  }
 
-  setForm((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
-};
+    if (name === "checkOut") {
+      const checkInDate = new Date(form.checkIn);
+      const checkOutDate = new Date(value);
+
+      if (checkOutDate <= checkInDate) {
+        setAlert({
+          message:
+            "Check-out must be after Check-in date",
+          type: "error",
+        });
+        return;
+      }
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const resetForm = () => {
     setForm({
@@ -222,32 +222,32 @@ const handleChange = (e) => {
     }
   };
   const generateInvoice = async (reservation) => {
-  try {
-    await axios.post(
-      "http://localhost:5000/api/invoices/create",
-      { reservationId: reservation._id },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    try {
+      await axios.post(
+        "http://localhost:5000/api/invoices/create",
+        { reservationId: reservation._id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setAlert({
-      message: "Invoice generated successfully",
-      type: "success",
-    });
+      setAlert({
+        message: "Invoice generated successfully",
+        type: "success",
+      });
 
-    fetchReservation();
-  } catch (err) {
-    setAlert({
-      message:
-        err.response?.data?.message ||
-        "Failed to generate invoice",
-      type: "error",
-    });
-  }
-};
+      fetchReservation();
+    } catch (err) {
+      setAlert({
+        message:
+          err.response?.data?.message ||
+          "Failed to generate invoice",
+        type: "error",
+      });
+    }
+  };
 
   // =======================
   // UI HELPERS
@@ -287,194 +287,217 @@ const handleChange = (e) => {
 
       {/* TABLE */}
       <div className="card-elevated overflow-hidden">
-         <table className="w-full text-sm"> 
-          <thead> 
+        <table className="w-full text-sm">
+          <thead>
             <tr className="text-left bg-secondary text-xs uppercase">
-               <th className="px-4 py-3">Guest</th> <th className="px-4 py-3">Room</th>
-                <th className="px-4 py-3">Check-in</th> <th className="px-4 py-3">Check-out</th>
-                 <th className="px-4 py-3">Status</th> <th className="px-4 py-3 text-right">Total</th>
-                 { role !== "guest" ? 
-                  <th className="px-4 py-3 text-right">Action</th> : <></>                  }
-                   </tr>
-           </thead>
-
-        <tbody>
-          {reservations.map((r) => (
-            <tr key={r._id} className="border-t">
-
-              <td className="px-4 py-3">{r.user?.name}</td>
-              <td className="px-4 py-3">
-                #{r.room?.roomId} · {r.room?.category}
-              </td>
-              <td className="px-4 py-3">
-                {new Date(r.checkIn).toDateString()}
-              </td>
-              <td className="px-4 py-3">
-                {new Date(r.checkOut).toDateString()}
-              </td>
-              <td className="px-4 py-3">
-                <StatusPill status={r.status} />
-              </td>
-              <td className="px-4 py-3 text-right">
-                {fmtMoney(r.room?.price || 0)}
-              </td>
-              {role === "guest"? 
-                <></>
-              :
-              <td className="px-4 py-3 text-right">
-                <div className="flex justify-end gap-2">
-
-                  {/* STATUS BUTTON */}
-                  {getNextStatus(r.status) && (
-                    <button
-                      onClick={() =>
-                        updateStatus(r._id, getNextStatus(r.status))
-                      }
-                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                    >
-                      {getButtonLabel(r.status)}
-                    </button>
-                  )}
-
-                  {/* CANCEL */}
-                  {r.status !== "completed" && r.status !== "cancelled" && (
-                    <button
-                      onClick={() => cancelReservation(r._id)}
-                      className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-                    >
-                      Cancel
-                    </button>
-                  )}
-
-                  {/* INVOICE ONLY AFTER COMPLETION */}
-                  {r.status === "completed" && (
-  <button
-    disabled={r.hasInvoice}
-    onClick={() => generateInvoice(r)}
-    className={`px-4 py-2 text-sm rounded-md ${
-      r.hasInvoice
-        ? "bg-gray-400 text-white cursor-not-allowed"
-        : "bg-primary text-primary-foreground"
-    }`}
-  >
-    {r.hasInvoice
-      ? "Invoice Generated"
-      : "Generate Invoice"}
-  </button>
-)}
-
-                </div>
-              </td>
-             }
+              <th className="px-4 py-3">Guest</th> <th className="px-4 py-3">Room</th>
+              <th className="px-4 py-3">Check-in</th> <th className="px-4 py-3">Check-out</th>
+              <th className="px-4 py-3">Status</th> <th className="px-4 py-3 text-right">Total</th>
+                <th className="px-4 py-3 text-right">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {reservations.map((r) => (
+              <tr key={r._id} className="border-t">
+
+                <td className="px-4 py-3">{r.user?.name}</td>
+                <td className="px-4 py-3">
+                  #{r.room?.roomId} · {r.room?.category}
+                </td>
+                <td className="px-4 py-3">
+                  {new Date(r.checkIn).toDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  {new Date(r.checkOut).toDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  <StatusPill status={r.status} />
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {fmtMoney(r.room?.price || 0)}
+                </td>
+                {role === "guest" ?
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+
+                      {r.status !== "completed" && r.status !== "cancelled" && (
+                        <button
+                          onClick={() => cancelReservation(r._id)}
+                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                        >
+                          Cancel
+                        </button>
+                      )}
+
+                      {r.status === "completed" && (
+                        <button
+                          disabled={r.hasInvoice}
+                          onClick={() => generateInvoice(r)}
+                          className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-primary text-primary-foreground"
+                            }`}
+                        >
+                          {r.hasInvoice
+                            ? "Invoice Generated"
+                            : "Generate Invoice"}
+                        </button>
+                      )}
+
+                    </div>
+                  </td>
+                
+                :
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      {getNextStatus(r.status) && (
+                        <button
+                          onClick={() =>
+                            updateStatus(r._id, getNextStatus(r.status))
+                          }
+                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                        >
+                          {getButtonLabel(r.status)}
+                        </button>
+                      )}
+
+                      {r.status !== "completed" && r.status !== "cancelled" && (
+                        <button
+                          onClick={() => cancelReservation(r._id)}
+                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+                        >
+                          Cancel
+                        </button>
+                      )}
+
+                      {r.status === "completed" && (
+                        <button
+                          disabled={r.hasInvoice}
+                          onClick={() => generateInvoice(r)}
+                          className={`px-4 py-2 text-sm rounded-md ${r.hasInvoice
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-primary text-primary-foreground"
+                            }`}
+                        >
+                          {r.hasInvoice
+                            ? "Invoice Generated"
+                            : "Generate Invoice"}
+                        </button>
+                      )}
+
+                    </div>
+                  </td>
+                }
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-    {/* MODAL */}
-{open && (
-  <div
-    className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50"
-    onClick={() => setOpen(false)}
-  >
-    <div
-      className="card-elevated w-full max-w-md p-6 space-y-4"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h2 className="font-display text-xl">New reservation</h2>
-
-      {/* User */}
-      <label className="block text-sm">
-        User
-        <select
-          name="user"
-          value={form.user}
-          onChange={handleChange}
-          className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        >
-          <option value="">Select Guest User</option>
-          {users.map((u) => (
-            <option key={u._id} value={u._id}>
-              {u.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {/* Room */}
-      <label className="block text-sm">
-        Room
-        <select
-          name="room"
-          value={form.room}
-          onChange={handleChange}
-          className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-        >
-          <option value="">Select Available Room</option>
-          {rooms.map((r) => (
-            <option key={r._id} value={r._id}>
-              #{r.roomId} · {r.category} · Rs {r.price}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {/* Check-in */}
-<label className="block text-sm">
-  Check-in
-  <input
-    type="date"
-    name="checkIn"
-    value={form.checkIn}
-    onChange={handleChange}
-    min={today}
-    className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-  />
-</label>
-
-      {/* Check-out */}
-<label className="block text-sm">
-  Check-out
-  <input
-    type="date"
-    name="checkOut"
-    value={form.checkOut}
-    onChange={handleChange}
-    min={
-      form.checkIn
-        ? new Date(
-            new Date(form.checkIn).setDate(
-              new Date(form.checkIn).getDate() + 1
-            )
-          )
-            .toISOString()
-            .split("T")[0]
-        : tomorrowDate
-    }
-    className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
-  />
-</label>
-
-      {/* Buttons */}
-      <div className="flex justify-end gap-2">
-        <button
+      {/* MODAL */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-primary/40 grid place-items-center p-4 z-50"
           onClick={() => setOpen(false)}
-          className="px-4 py-2 text-sm hover:bg-muted rounded-md"
         >
-          Cancel
-        </button>
+          <div
+            className="card-elevated w-full max-w-md p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-display text-xl">New reservation</h2>
 
-        <button
-          onClick={saveReservation}
-          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
-        >
-          Confirm
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            {/* User */}
+            <label className="block text-sm">
+              User
+              <select
+                name="user"
+                value={form.user}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              >
+                <option value="">Select Guest User</option>
+                {users.map((u) => (
+                  <option key={u._id} value={u._id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {/* Room */}
+            <label className="block text-sm">
+              Room
+              <select
+                name="room"
+                value={form.room}
+                onChange={handleChange}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              >
+                <option value="">Select Available Room</option>
+                {rooms.map((r) => (
+                  <option key={r._id} value={r._id}>
+                    #{r.roomId} · {r.category} · Rs {r.price}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {/* Check-in */}
+            <label className="block text-sm">
+              Check-in
+              <input
+                type="date"
+                name="checkIn"
+                value={form.checkIn}
+                onChange={handleChange}
+                min={today}
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
+
+            {/* Check-out */}
+            <label className="block text-sm">
+              Check-out
+              <input
+                type="date"
+                name="checkOut"
+                value={form.checkOut}
+                onChange={handleChange}
+                min={
+                  form.checkIn
+                    ? new Date(
+                      new Date(form.checkIn).setDate(
+                        new Date(form.checkIn).getDate() + 1
+                      )
+                    )
+                      .toISOString()
+                      .split("T")[0]
+                    : tomorrowDate
+                }
+                className="mt-1 w-full bg-secondary border border-border rounded-md px-3 py-2"
+              />
+            </label>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setOpen(false)}
+                className="px-4 py-2 text-sm hover:bg-muted rounded-md"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={saveReservation}
+                className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
