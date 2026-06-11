@@ -382,7 +382,7 @@ export default function Reservations() {
                           </button>
                         )}
 
-                        {r.status !== "completed" && r.status !== "cancelled" && (
+                        {r.status !== "completed"  && r.status !== "checked_in"  && r.status !== "checked_out" && r.status !== "cancelled" && (
                           <button
                             onClick={() => cancelReservation(r._id)}
                             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md"
