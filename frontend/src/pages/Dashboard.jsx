@@ -1,67 +1,154 @@
-import { ArrowUpRight, BedDouble, CalendarCheck, DollarSign, Sparkles, Star, } from "lucide-react";
+import {
+  ArrowUpRight,
+  BedDouble,
+  CalendarCheck,
+  DollarSign,
+  Sparkles,
+  Star,
+} from "lucide-react";
+
 import { AppLayout } from "../components/AppLayout";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Dashboard() {
+  const [reservations, setReservations] = useState([]);
+  const [rooms, setRooms] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const token = localStorage.getItem("token");
+
+  // ======================
+  // FETCH DATA
+  // ======================
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // RESERVATIONS
+        const resReservations = await axios.get(
+          "http://localhost:5000/api/reservation/all",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setReservations(resReservations.data);
+
+        // ROOMS
+        const resRooms = await axios.get(
+          "http://localhost:5000/api/rooms/all",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRooms(resRooms.data);
+
+      } catch (err) {
+        console.log(err);
+        setError(
+          err.response?.data?.message || "Failed to load dashboard data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // ======================
+  // STATS CALCULATION
+  // ======================
+  const totalRooms = rooms.length;
+
+  const occupiedRooms = rooms.filter(
+    (r) => r.status === "occupied"
+  ).length;
+
+  const occupancy = totalRooms
+    ? Math.round((occupiedRooms / totalRooms) * 100)
+    : 0;
+
+  const totalRevenue = reservations.reduce((acc, r) => {
+    return acc + (r.room?.price || 0);
+  }, 0);
+
   return (
-    <AppLayout title="Welcome back, Alex" subtitle="Here's what's happening across LuxuryStay today.">
+    <AppLayout
+      title="Welcome back, Admin"
+      subtitle="Here's what's happening across your hotel today."
+    >
       <div>
-        {/* STATS */}
+
+        {/* ================= STATS ================= */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+          {/* OCCUPANCY */}
           <div className="card-elevated p-5">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                <div className="text-xs uppercase text-muted-foreground">
                   Occupancy
                 </div>
-                <div className="stat-number mt-2">78%</div>
+                <div className="stat-number mt-2">{occupancy}%</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  12 / 15 rooms
+                  {occupiedRooms} / {totalRooms} rooms
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-secondary text-primary grid place-items-center">
-                <BedDouble className="w-5 h-5" />
-              </div>
+              <BedDouble className="w-5 h-5" />
             </div>
           </div>
 
+          {/* RESERVATIONS */}
           <div className="card-elevated p-5">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Arrivals
+                <div className="text-xs uppercase text-muted-foreground">
+                  Reservations
                 </div>
-                <div className="stat-number mt-2">6</div>
+                <div className="stat-number mt-2">
+                  {reservations.length}
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  Confirmed bookings
+                  Total bookings
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-secondary text-primary grid place-items-center">
-                <CalendarCheck className="w-5 h-5" />
-              </div>
+              <CalendarCheck className="w-5 h-5" />
             </div>
           </div>
 
+          {/* REVENUE */}
           <div className="card-elevated p-5">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Revenue (period)
+                <div className="text-xs uppercase text-muted-foreground">
+                  Revenue
                 </div>
-                <div className="stat-number mt-2">$12,450</div>
+                <div className="stat-number mt-2">
+                  ${totalRevenue}
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  Across all reservations
+                  Across reservations
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-secondary text-primary grid place-items-center">
-                <DollarSign className="w-5 h-5" />
-              </div>
+              <DollarSign className="w-5 h-5" />
             </div>
           </div>
 
+          {/* RATING */}
           <div className="card-elevated p-5">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                <div className="text-xs uppercase text-muted-foreground">
                   Guest rating
                 </div>
                 <div className="stat-number mt-2">4.6★</div>
@@ -69,127 +156,115 @@ export default function Dashboard() {
                   128 reviews
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-secondary text-primary grid place-items-center">
-                <Star className="w-5 h-5" />
-              </div>
+              <Star className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        {/* MAIN GRID */}
+        {/* ================= MAIN GRID ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
 
-          {/* RESERVATIONS */}
+          {/* RESERVATIONS TABLE */}
           <div className="card-elevated p-5 lg:col-span-2">
+
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-display">Recent reservations</h2>
+              <h2 className="text-lg font-display">
+                Recent reservations
+              </h2>
+
               <a
                 href="#"
-                className="text-xs text-accent inline-flex items-center gap-1 hover:underline"
+                className="text-xs text-accent inline-flex items-center gap-1"
               >
                 View all <ArrowUpRight className="w-3 h-3" />
               </a>
             </div>
 
             <table className="w-full text-sm">
+
               <thead className="text-xs text-muted-foreground border-b">
                 <tr className="text-left">
-                  <th className="py-2 font-medium">Guest</th>
-                  <th className="py-2 font-medium">Room</th>
-                  <th className="py-2 font-medium">Dates</th>
-                  <th className="py-2 font-medium">Status</th>
-                  <th className="py-2 font-medium text-right">Total</th>
+                  <th className="py-2">Guest</th>
+                  <th className="py-2">Room</th>
+                  <th className="py-2">Dates</th>
+                  <th className="py-2">Status</th>
+                  <th className="py-2 text-right">Total</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr className="border-b">
-                  <td className="py-3">John Smith</td>
-                  <td className="py-3 text-muted-foreground">
-                    #101 · Deluxe
-                  </td>
-                  <td className="py-3 text-muted-foreground">
-                    10 Jun → 12 Jun
-                  </td>
-                  <td className="py-3">Confirmed</td>
-                  <td className="py-3 text-right font-medium">$450</td>
-                </tr>
 
-                <tr className="border-b">
-                  <td className="py-3">Sarah Khan</td>
-                  <td className="py-3 text-muted-foreground">
-                    #202 · Suite
-                  </td>
-                  <td className="py-3 text-muted-foreground">
-                    11 Jun → 14 Jun
-                  </td>
-                  <td className="py-3">Pending</td>
-                  <td className="py-3 text-right font-medium">$980</td>
-                </tr>
+                {/* LOADING */}
+                {loading && (
+                  <tr>
+                    <td colSpan="5" className="py-4 text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                )}
 
-                <tr>
-                  <td className="py-3">Ali Ahmed</td>
-                  <td className="py-3 text-muted-foreground">
-                    #305 · Standard
-                  </td>
-                  <td className="py-3 text-muted-foreground">
-                    09 Jun → 11 Jun
-                  </td>
-                  <td className="py-3">Confirmed</td>
-                  <td className="py-3 text-right font-medium">$320</td>
-                </tr>
+                {/* ERROR */}
+                {error && (
+                  <tr>
+                    <td colSpan="5" className="py-4 text-center text-red-500">
+                      {error}
+                    </td>
+                  </tr>
+                )}
+
+                {/* DATA */}
+                {!loading &&
+                  !error &&
+                  reservations.map((r) => (
+                    <tr key={r._id} className="border-b">
+
+                      <td className="py-3">
+                        {r.user?.name}
+                      </td>
+
+                      <td className="py-3 text-muted-foreground">
+                        #{r.room?.roomId} · {r.room?.category}
+                      </td>
+
+                      <td className="py-3 text-muted-foreground">
+                        {new Date(r.checkIn).toLocaleDateString()} →{" "}
+                        {new Date(r.checkOut).toLocaleDateString()}
+                      </td>
+
+                      <td className="py-3 capitalize">
+                        {r.status}
+                      </td>
+
+                      <td className="py-3 text-right font-medium">
+                        ${r.room?.price}
+                      </td>
+
+                    </tr>
+                  ))}
+
               </tbody>
+
             </table>
           </div>
 
           {/* HOUSEKEEPING */}
           <div className="card-elevated p-5">
+
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-display">Housekeeping queue</h2>
-              <Sparkles className="w-4 h-4 text-gold" />
+              <h2 className="text-lg font-display">
+                Housekeeping queue
+              </h2>
+              <Sparkles className="w-4 h-4" />
             </div>
 
             <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-secondary text-primary grid place-items-center text-xs font-semibold">
-                  101
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm capitalize">cleaning</div>
-                  <div className="text-xs text-muted-foreground">
-                    Maria
-                  </div>
-                </div>
-                <span>Pending</span>
-              </li>
-
-              <li className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-secondary text-primary grid place-items-center text-xs font-semibold">
-                  202
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm capitalize">maintenance</div>
-                  <div className="text-xs text-muted-foreground">
-                    John
-                  </div>
-                </div>
-                <span>In progress</span>
-              </li>
-
-              <li className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-secondary text-primary grid place-items-center text-xs font-semibold">
-                  305
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm capitalize">cleaning</div>
-                  <div className="text-xs text-muted-foreground">
-                    Ayesha
-                  </div>
-                </div>
-                <span>Done</span>
-              </li>
+              <li>Room 101 - Cleaning - Pending</li>
+              <li>Room 202 - Maintenance - In progress</li>
+              <li>Room 305 - Cleaning - Done</li>
             </ul>
+
           </div>
+
         </div>
       </div>
     </AppLayout>
