@@ -3,7 +3,6 @@ const User = require('../models/users');
 
 exports.authMiddleware = async (req, res, next) => {
   try {
-    // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
@@ -12,10 +11,8 @@ exports.authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find user
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -24,10 +21,8 @@ exports.authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Save logged-in user in request
     req.user = user;
 
-    // Go to next route
     next();
 
   } catch (err) {
