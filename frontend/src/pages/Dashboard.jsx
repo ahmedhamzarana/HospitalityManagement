@@ -40,7 +40,6 @@ export default function Dashboard() {
 
         setReservations(resReservations.data);
 
-        // ROOMS
         const resRooms = await axios.get(
           "http://localhost:5000/api/rooms/all",
           {

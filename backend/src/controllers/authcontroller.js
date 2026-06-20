@@ -9,29 +9,24 @@ exports.register = async (req, res) => {
 
     let errors = {};
 
-    // Required fields
     if (!name) errors.name = 'Name is required';
     if (!email) errors.email = 'Email is required';
     if (!phone) errors.phone = 'Phone Number is required';
     if (!password) errors.password = 'Password is required';
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
       errors.email = 'Invalid email format';
     }
 
-    // Phone validation
     if (phone && phone.length < 11) {
       errors.phone = 'Phone Number must be at least 11 digits';
     }
 
-    // Password validation
     if (password && password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
 
-    // Only check DB if values exist
     if (email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -46,29 +41,24 @@ exports.register = async (req, res) => {
       }
     }
 
-    // Return errors early
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
       name,
       email,
       phone,
       password: hashedPassword,
     });
-
-    // (Optional improvement: return token)
     const token = generateToken(user._id);
 
     return res.status(201).json({
       message: 'Registration successful',
       redirect: '/login',
-      token, // optional but useful
+      token,
       user,
     });
 

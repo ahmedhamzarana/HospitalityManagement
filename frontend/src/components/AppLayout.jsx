@@ -79,7 +79,7 @@ export function AppLayout({ children, title, subtitle }) {
     nav = [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/housekeeping", label: "Housekeeping", icon: Sparkles },
-      { to: "/staff-tasks", label: "Staff Tasks", icon: UserCog },
+      // { to: "/staff-tasks", label: "Staff Tasks", icon: UserCog },
       { to: "/feedback", label: "Feedback", icon: MessageSquare },
     ];
   } else {
